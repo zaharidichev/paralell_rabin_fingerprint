@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "/usr/local/cuda-5.0/samples/0_Simple/simplePrintf/cuPrintf.cu"
 #include "data_structures/Buffer.cu"
 #include "math/PolyMath.cu"
 #include "rabin_fingerprint/RabinFingerprint.cu"
@@ -20,7 +19,7 @@
 
 /**
  * kernel that creates fingeprrints for a sliding window of 48b over 256 long stream
- */__global__ void bitreverse(rabinData* deviceRabin, BYTE* data,
+ */ __global__ void RabinExample(rabinData* deviceRabin, BYTE* data,
 		POLY_64* results) {
 
 	// create and initialize the local window buffer
@@ -37,10 +36,11 @@
 }
 
 /**
- * main function that just launces the kernel and takes care of book kepping
- * @return
+ * main function that just launced the kernel and takes care of book kepping
  */
-int main(void) {
+
+
+void fingerprint256Bytes(POLY_64* results, BYTE*data, POLY_64 irreduciblePoly) {
 
 	// variables for our data
 
@@ -49,7 +49,7 @@ int main(void) {
 	rabinData* deviceData; // device_window
 
 	// we first init the window on the host (ideally we should copy that to constant mem)
-	initWindow(&hostData, 0xbfe6b8a5bf378d83);
+	initWindow(&hostData, irreduciblePoly);
 
 	//allocate device memory for the fingerprinting data
 	cudaMalloc((void**) &deviceData, sizeof(rabinData));
@@ -59,16 +59,13 @@ int main(void) {
 			cudaMemcpy(deviceData, &hostData, sizeof(rabinData), cudaMemcpyHostToDevice));
 
 	// allocate space for the data that we need to fingerprint
-	BYTE dataToFingerprint_h[256];
 	BYTE* dataToFingerprint_d;
 	// init the data to some values
-	for (int i = 0; i < 256; ++i) {
-		dataToFingerprint_h[i] = (BYTE) i;
-	}
+
 	// allocate memory on the host and copy the data
 	cudaMalloc((void**) &dataToFingerprint_d, sizeof(BYTE) * 256);
 	CUDA_CHECK_RETURN(
-			cudaMemcpy(dataToFingerprint_d, &dataToFingerprint_h, sizeof(BYTE) * 256, cudaMemcpyHostToDevice));
+			cudaMemcpy(dataToFingerprint_d, data, sizeof(BYTE) * 256, cudaMemcpyHostToDevice));
 
 	// now we also need some space for the results
 	POLY_64* results_d;
@@ -76,28 +73,17 @@ int main(void) {
 
 	// call the kernel that will create the fingerprints
 
-	 cudaPrintfInit();
-	 bitreverse<<<1, 1>>>(deviceData, dataToFingerprint_d, results_d);
-	 cudaPrintfDisplay(stdout, true);
-	 cudaPrintfEnd();
+	RabinExample<<<1, 1>>>(deviceData, dataToFingerprint_d, results_d);
 
 
-	// download our data
-	POLY_64 restults_H[256];
+	//copy back into our supplied data
 	CUDA_CHECK_RETURN(
-			cudaMemcpy(&restults_H, results_d, sizeof(POLY_64) * 256, cudaMemcpyDeviceToHost));
-
-	// now we jist print it as HEX numbers...
-	for (int i = 0; i < 256; ++i) {
-
-		printPolyAsHEXString(restults_H[i]);
-		printf("\n");
-
-	}
+			cudaMemcpy(results, results_d, sizeof(POLY_64) * 256, cudaMemcpyDeviceToHost));
 
 	// free all the memory alocated on the card
 	CUDA_CHECK_RETURN(cudaFree(deviceData));
 	CUDA_CHECK_RETURN(cudaFree(dataToFingerprint_d));
 	CUDA_CHECK_RETURN(cudaFree(results_d));
-	return 0;
+
 }
+
