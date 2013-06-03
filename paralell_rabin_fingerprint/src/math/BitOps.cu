@@ -6,7 +6,7 @@
  * numbers on bit level.
  *
  *  Created on: May 31, 2013
- *      Author: zahari
+ *      Author: zahari <zaharidichev@gmail.com>
  */
 
 #ifndef BITOPS_CUH_

@@ -19,7 +19,7 @@ typedef unsigned char BYTE;
 
 
 
- inline __host__ __device__   void initBuffer(byteBuffer* buf) {
+ inline __host__ __device__  void initBuffer(byteBuffer* buf) {
 
 
 

@@ -10,13 +10,14 @@
 
 
 inline __host__ __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
+
 	int degreeOfX = degree(x); // get degree of x
 	int degreeOfY = degree(y); // get degree of y
 
 	for (int i = degreeOfX - degreeOfY; i >= 0; i--) {
 		if (checkBit(x, (i + degreeOfY))) {
 			// if the bit is degree contribution
-			// shift y by the difference between the degrees
+			// shift y by the difference between the degrees (synthetic division algorhithm)
 			uint64_t shiftedByDiference = y << i;
 			//xor X with the shifted result
 			x = x ^ shiftedByDiference;
@@ -32,22 +33,30 @@ inline __host__ __device__ int degree(POLY_64 p) {
 
 
 
+
+
+
 inline __host__ __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
 	//defining high and low bits of 128 poly
 	POLY_64 highBits = 0;
 	POLY_64 lowBits = 0;
 
 	if ((x & POLY_64(1)) != 0) {
-
 		lowBits = y;
 	}
 	for (int i = 1; i < 64; i++) {
-		// we loop over all the degree bits
+		/*
+		 * first check whether the bit is set at all
+		 */
 		if ((x & (INT_64(1) << i)) != 0) {
 
 			/*
-			 * Multiplication in GF(2) is effectivelly XOR-ing.
-			 * Therefore, we do that
+			 * very efficient way of multiplication by shifting
+			 * and then XOR-ring, rather than iterating through all
+			 * all the terms. This trick is used in the source code
+			 * of LBFS. Remeber that when it comes to multiplication
+			 * we have term by term addition and that in GF(2) addition
+			 * can be expresses as XOR operation for every term
 			 */
 			highBits ^= y >> (64 - i);
 			lowBits ^= y << i;
@@ -64,9 +73,11 @@ inline __host__ __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
 
 inline __host__ __device__ POLY_64 polyModmult(POLY_64 x, POLY_64 y, POLY_64 d) {
 
-	POLY_128 product = mult_128(x, y);
-	return mod_128(product, d);
+	POLY_128 product = mult_128(x, y); // we first multiply the two polys
+	return mod_128(product, d); // and then return the result of modding the product by d
 }
+
+
 
 inline __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
 	INT_64 highBits = x.highBits;
@@ -130,7 +141,7 @@ inline __host__  void printPolyAsEquationString(POLY_64 poly) {
 	}
 }
 
-inline  void printPolyAsHEXString(POLY_64 p) {
+inline __host__ void printPolyAsHEXString(POLY_64 p) {
 	printf("%016llX", p);
 
 

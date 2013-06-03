@@ -16,7 +16,7 @@
  *
  *
  *  Created on: May 31, 2013
- *      Author: zahari
+ *      Author: zahari <zaharidichev@gmail.com>
  */
 
 #ifndef BUFFER_CUH_
