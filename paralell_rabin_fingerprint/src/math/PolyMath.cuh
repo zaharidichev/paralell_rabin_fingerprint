@@ -1,5 +1,14 @@
-/*
+/**
  * PolyMath.cuh
+ *
+ *Contains a set of functions that perform operations on polynomials in GF(2),
+ *that are expressed as 64 bit integers. It is important to note that integers
+ *and their bit representation is good match for GF(2) since the set contains
+ *only two elements {0,1};
+ *
+ *For more information regarding arithmetic in this field, take a look at:
+ *
+ *https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture6.pdf
  *
  *  Created on: May 30, 2013
  *      Author: zahari
@@ -7,30 +16,32 @@
 
 #ifndef POLYMATH_CUH_
 #define POLYMATH_CUH_
-#include "DedupDefines.h"
-#include "Polynomial_128.cuh"
+#include "../etc/DedupDefines.h"
+#include "../data_structures/Polynomial_128.cuh"
 #include "/usr/local/cuda-5.0/samples/0_Simple/simplePrintf/cuPrintf.cuh"
 
 
+
+
+/*
+ * This is a function pointer to our printing function.
+ * We need to do that since on older cuda architectures
+ * the use of printf() in device code is not possible
+ * and alternatively cuPrintf is used;
+ */
+
+
+//typedef (*print_func)(const char *,...) print
 typedef u_int64_t POLY_64;
 typedef  Polynomial_128 POLY_128;
 
 
-/**
- * A method for multiplying two polynomials in GF(2). It performs x*y. The
- * method is a naive implementation that assumes that the resulting poly
- * will be of degree less than 64. Otherwise it will overflow the 64 bit
- * numbers used to express the polynomial
- *
- * @param x the first polynomial
- * @param y the second polynomial
- * @return the result of the multiplication
- */
 
-__host__ __device__ POLY_64 mult(POLY_64 x, POLY_64 y);
 
 /**
  * Performs X % Y for two polynomials in GF(2) that have a maximum degree of 63.
+ * In this case our modding requires just a
+ *
  *
  * @param x the first polynomial
  * @param y the second polynomial
@@ -101,19 +112,19 @@ __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d);
  *
  * @param poly the polynomial that needs to be printed
  */
-__host__ __device__ void printPolyAsEquationString(POLY_64 poly);
+__host__ void printPolyAsEquationString(POLY_64 poly);
 
 /**
  * Prints a 64 bit number, representing a polynomial as a HEX string
  *
  * @param p  the integer to be printed
  */
- void printPolyAsHEXString(POLY_64 p);
+ __host__ void printPolyAsHEXString(POLY_64 p);
 
 /**
  * Prints the bit pattern that is contained in a 64 bit integer (unsigned)
  * @param a
  */
-__host__ __device__ void printPolyAsBinaryString(INT_64 a);
+__host__  void printPolyAsBinaryString(POLY_64 a);
 
 #endif /* POLYMATH_CUH_ */

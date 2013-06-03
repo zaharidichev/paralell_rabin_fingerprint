@@ -1,9 +1,9 @@
-/*
+/**
+ *
+ * BitOps.cu
  *
  * This is a collection of functions that are useful when manipulating 64 bit integer
  * numbers on bit level.
- *
- * BitOps.cuh
  *
  *  Created on: May 31, 2013
  *      Author: zahari
