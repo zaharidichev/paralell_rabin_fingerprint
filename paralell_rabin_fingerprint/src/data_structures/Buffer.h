@@ -19,8 +19,8 @@
  *      Author: zahari <zaharidichev@gmail.com>
  */
 
-#ifndef BUFFER_CUH_
-#define BUFFER_CUH_
+#ifndef BUFFER_H_
+#define BUFFER_H_
 
 #define BUFFER_SIZE 48
 typedef unsigned char BYTE;
@@ -75,4 +75,62 @@ __host__ __device__ bool isFull(byteBuffer* buf);
  */
 __host__  __device__ BYTE push(BYTE b, byteBuffer* buf);
 
-#endif /* BUFFER_CUH_ */
+
+
+
+
+inline __host__ __device__  void initBuffer(byteBuffer* buf) {
+
+
+
+	// cannot do that within a CUDA kernel...
+	//memset(buf->buf, 0, BUFFER_SIZE);
+
+	for (int i = 0; i < BUFFER_SIZE; ++i) {
+		//  this little... thing caused me so much trouble... !
+		buf->buf[i] = 0;
+	}
+
+	// setting the pointer to the beginning of the array
+
+	buf->bufptr = 0;
+	buf->ifFull = 0;
+}
+
+
+
+inline __host__ __device__ void resetBuffer(byteBuffer* buf)
+{
+	initBuffer(buf);
+}
+
+
+inline  __device__  bool isFull(byteBuffer* buf) {
+	/*
+	 * simply trusting that push will set the full toggle to
+	 * true when the buffer is indeed full
+	 */
+	return buf->ifFull;
+}
+
+inline __device__  unsigned char push(BYTE b, byteBuffer* buf) {
+
+	if (++buf->bufptr >= BUFFER_SIZE) {
+		/*
+		 * if the buffer is full, wet the pointer to
+		 * point to the first elements pushed
+		 */
+		buf->ifFull = true;
+		buf->bufptr = 0;
+	}
+	// retrieves the byte that was at the place where this is pushed
+	BYTE oldInPlace = buf->buf[buf->bufptr];
+
+	buf->buf[buf->bufptr] = b; // Overwrites the position in the array
+	return oldInPlace;
+}
+
+
+
+
+#endif /* BUFFER_H_ */

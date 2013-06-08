@@ -1,13 +1,34 @@
+/**
+ * PolyMath.cuh
+ *
+ *Contains a set of functions that perform operations on polynomials in GF(2),
+ *that are expressed as 64 bit integers. It is important to note that integers
+ *and their bit representation is good match for GF(2) since the set contains
+ *only two elements {0,1};
+ *
+ *For more information regarding arithmetic in this field, take a look at:
+ *
+ *https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture6.pdf
+ *
+ *  Created on: May 30, 2013
+ *      Author: zahari <zaharidichev@gmail.com>
+ */
 
-
-#include "PolyMath.cuh"
-#include "BitOps.cu"
+#ifndef POLYMATH_H_
+#define POLYMATH_H_
+#include "../data_structures/Polynomial_128.h"
+#include "../etc/DedupDefines.h"
+#include "stdint.h"
+#include "BitOps.h"
 #include "stdio.h"
-#ifndef POLYMATH_CU
-#define POLYMATH_CU
+
+typedef Polynomial_128 POLY_128;
 
 
 
+inline __host__ __device__ int degree(POLY_64 p) {
+	return getLastSetBit(p); // get the last set bit (the one with the highest significance)
+}
 
 inline __host__ __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
 
@@ -27,9 +48,7 @@ inline __host__ __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
 	return x;
 }
 
-inline __host__ __device__ int degree(POLY_64 p) {
-	return getLastSetBit(p); // get the last set bit (the one with the highest significance)
-}
+
 
 
 
@@ -71,13 +90,6 @@ inline __host__ __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
 	return result;
 }
 
-inline __host__ __device__ POLY_64 polyModmult(POLY_64 x, POLY_64 y, POLY_64 d) {
-
-	POLY_128 product = mult_128(x, y); // we first multiply the two polys
-	return mod_128(product, d); // and then return the result of modding the product by d
-}
-
-
 
 inline __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
 	INT_64 highBits = x.highBits;
@@ -103,6 +115,16 @@ inline __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
 	}
 	return lowBits;
 }
+
+inline __host__ __device__ POLY_64 polyModmult(POLY_64 x, POLY_64 y, POLY_64 d) {
+
+	POLY_128 product = mult_128(x, y); // we first multiply the two polys
+	return mod_128(product, d); // and then return the result of modding the product by d
+}
+
+
+
+
 
 inline __host__  void printPolyAsEquationString(POLY_64 poly) {
 	/*
@@ -160,4 +182,6 @@ inline __host__ void printPolyAsBinaryString(POLY_64 a) {
 		printf("%d", bits[i]);
 	}
 }
-#endif
+
+
+#endif /* POLYMATH_H_ */

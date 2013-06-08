@@ -12,8 +12,8 @@
  *      Author: zahari <zaharidichev@gmail.com>
  */
 
-#ifndef POLYNOMIAL_128_CUH_
-#define POLYNOMIAL_128_CUH_
+#ifndef POLYNOMIAL_128_H_
+#define POLYNOMIAL_128_H_
 
 typedef struct {
 	/*
@@ -27,4 +27,4 @@ typedef struct {
 	u_int64_t lowBits;
 } Polynomial_128;
 
-#endif /* POLYNOMIAL_128_CUH_ */
+#endif /* POLYNOMIAL_128_H_ */

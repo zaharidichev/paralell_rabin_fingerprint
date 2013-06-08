@@ -5,8 +5,8 @@
  *      Author: zahari
  */
 
-#ifndef DEDUPDEFINES_CUH_
-#define DEDUPDEFINES_CUH_
+#ifndef DEDUPDEFINES_H_
+#define DEDUPDEFINES_H_
 #include <stdint.h>
 #include "cuda.h"
 
@@ -20,9 +20,8 @@
  */
 
 typedef unsigned char BYTE;
-typedef u_int64_t POLY_64;
-
-typedef u_int64_t INT_64;
+typedef uint64_t POLY_64;
+typedef uint64_t INT_64;
 
 //typedef Polynomial_128 POLY_128;
 
@@ -32,4 +31,4 @@ typedef u_int64_t INT_64;
 
 
 
-#endif /* DEDUPDEFINES_CUH_ */
+#endif /* DEDUPDEFINES_H_ */
