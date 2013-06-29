@@ -21,7 +21,23 @@
 #define  SIZE 104857
 
 
+ void printChunkData_host(long start, long end) {
+	printf("Chunk defined:[%d --- %d] [%d]\n", start, end, end - start);
+}
 
+
+void printResults(long* results) {
+
+	long cnt = 1;
+	long size = 0;
+	while (results[cnt] != -1) {
+		printChunkData_host(results[cnt-1], results[cnt]);
+		size = size + (results[cnt] - results[cnt-1]);
+		cnt++;
+	}
+	printf("Chunks on CPU: %d , Avg size: %d\n", cnt,
+			size / cnt);
+}
 
 /**
  * This macro checks return value of the CUDA runtime call and exits
@@ -36,9 +52,9 @@
 	} }
 
 __global__ void RabinExample(rabinData* deviceRabin, BYTE* data, long from,
-		long to) {
+		long to, long* results) {
 
-	chunkData(deviceRabin, data, from, to, 512, 256, 460, 2800);
+	chunkData(deviceRabin, data, from, to, 512, 256, 460, 2800, results);
 
 }
 
@@ -51,7 +67,7 @@ int main() {
 
 	BYTE* data = (BYTE*) malloc(sizeof(BYTE) * SIZE);
 	long* breakPoints = (long*) malloc(sizeof(long) * SIZE);
-	long* resultingBreakpoints = (long*) malloc(sizeof(long) * SIZE);
+	long* resultingBreakpoints = (long*) malloc(sizeof(long) * ((SIZE/460) + 1));
 
 	srand(2);
 	for (int var = 0; var < SIZE; ++var) {
@@ -82,23 +98,31 @@ int main() {
 
 	//now we allocate some space for the results
 	long* resultingBreakpoints_d;
-	cudaMalloc((void**) &resultingBreakpoints_d, sizeof(long) * size);
+	cudaMalloc((void**) &resultingBreakpoints_d, sizeof(long) *   ((SIZE/460) + 1));
 
 	// call the kernel that will create the fingerprints
 
 	cudaPrintfInit();
-	RabinExample<<<1, 1>>>(deviceData, dataToFingerprint_d, 0, size);
+	RabinExample<<<1, 1>>>(deviceData, dataToFingerprint_d, 0, size, resultingBreakpoints_d);
 	cudaPrintfDisplay(stdout, true);
 	cudaPrintfEnd();
 
 	//copy back into our supplied data
 	CUDA_CHECK_RETURN(
-			cudaMemcpy(resultingBreakpoints, resultingBreakpoints_d, sizeof(long) * size, cudaMemcpyDeviceToHost));
+			cudaMemcpy(resultingBreakpoints, resultingBreakpoints_d, sizeof(long) *  ((SIZE/460) + 1), cudaMemcpyDeviceToHost));
 
 	// free all the memory alocated on the card
 	CUDA_CHECK_RETURN(cudaFree(deviceData));
 	CUDA_CHECK_RETURN(cudaFree(dataToFingerprint_d));
 	CUDA_CHECK_RETURN(cudaFree(resultingBreakpoints_d));
+
+	printResults(resultingBreakpoints);
+
+
+	free(data);
+	free(breakPoints);
+	free(resultingBreakpoints);
+
 	return 0;
 }
 
