@@ -11,35 +11,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../rabin_fingerprint/RabinFingerprint.h"
-#include "/usr/local/cuda-5.0/samples/0_Simple/simplePrintf/cuPrintf.h"
+#include "cuda_runtime.h"
+//#include "/usr/local/cuda-5.0/samples/0_Simple/simplePrintf/cuPrintf.h"
 
-__device__ inline void addBreakPoint(long* breakpoints, long pos,
-		long *positionInArray) {
+__device__ inline void addBreakPoint(int* breakpoints, int pos, int *positionInArray) {
+
+	int id = blockIdx.x * blockDim.x + threadIdx.x;
+
+	printf("%d,%d,%d\n", id, pos, (*positionInArray));
+
 	breakpoints[(*positionInArray)] = pos;
 	(*positionInArray)++;
 }
 
-__device__ void printChunkData(long start, long end) {
-	cuPrintf("Chunk defined:[%d --- %d] [%d]\n", start, end, end - start);
+__device__ void printChunkData(int start, int end) {
+	int id = gridDim.x * gridDim.y * gridDim.z * blockDim.x * blockDim.y * blockDim.z;
+	printf("[%d] Chunk defined:[%d --- %d] [%d]\n", start, end, end - start, id);
 }
 
-__device__ void printResults_device(long* results) {
+__device__ void printResults_device(int* results, threadBounds b) {
+	for (int var = b.start; var < b.end; ++var) {
+		printChunkData(results[var], results[var]);
 
-	long avg_size = 0;
-	long cnt = 1;
-	while (results[cnt] != -1) {
-		printChunkData(results[cnt-1], results[cnt]);
-		avg_size = avg_size + (results[cnt] - results[cnt-1]);
-		cnt++;
 	}
-	cuPrintf("Chunks on GPU: %d , Avg size: %d\n", cnt,
-			avg_size / cnt);
+
 }
 
-
-__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, long from,
-		long to, int D, int Ddash, int minChSize, int maxChSize,
-		long* results) {
+__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, chunkingContext ctx, int* results) {
 
 	// create and initialize the local window buffer
 	byteBuffer b;
@@ -47,30 +45,29 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, long from,
 
 	POLY_64 fingerprint = 0; // the fingerprint that will be used
 
-	long pos = from; // the current position starting from a specific point
-	long lastBp = 0; // the last breakpoint that was found
-	long backUpBp = 0; // the backup break point found by the secondary divisor
+	int pos = bounds.start; // the current position starting from a specific point
+	int lastBp = bounds.start; // the last breakpoint that was found
+	int backUpBp = 0; // the backup break point found by the secondary divisor
 
-	long resultsCounter = 0;
-	addBreakPoint(results, pos, &resultsCounter);
+	int positionInArray = bounds.BPwritePosition;
 
-	long avgSize = 0;
+	int avgSize = 0;
 	int totalFound = 0;
 
-	for (; pos < to; ++pos) {
+	for (; pos < bounds.end; ++pos) {
 		fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
 
-		if (pos - lastBp < minChSize) {
+		if (pos - lastBp < ctx.minThr) {
 			continue;
 		}
 
-		if (bitMod(fingerprint, Ddash) == Ddash - 1) {
+		if (bitMod(fingerprint, ctx.Ddash) == ctx.Ddash - 1) {
 			backUpBp = pos;
 		}
 
-		if (bitMod(fingerprint, D) == D - 1) {
+		if (bitMod(fingerprint, ctx.D) == ctx.D - 1) {
 
-			addBreakPoint(results, pos, &resultsCounter);
+			addBreakPoint(results, pos, &positionInArray);
 			avgSize = avgSize + (pos - lastBp);
 			totalFound++;
 			backUpBp = 0;
@@ -78,13 +75,13 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, long from,
 			continue;
 		}
 
-		if (pos - lastBp < maxChSize) {
+		if (pos - lastBp < ctx.maxThr) {
 			continue;
 		}
 
 		if (backUpBp != 0) {
 
-			addBreakPoint(results, backUpBp, &resultsCounter);
+			addBreakPoint(results, backUpBp, &positionInArray);
 
 			avgSize = avgSize + (backUpBp - lastBp);
 
@@ -93,7 +90,7 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, long from,
 			backUpBp = 0;
 		} else {
 
-			addBreakPoint(results, pos, &resultsCounter);
+			addBreakPoint(results, pos, &positionInArray);
 
 			avgSize = avgSize + (pos - lastBp);
 
@@ -103,8 +100,8 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, long from,
 		}
 	}
 
-	addBreakPoint(results, -1, &resultsCounter);
-	printResults_device(results);
+	addBreakPoint(results, pos, &positionInArray);
+	//printResults_device(results,bounds);
 }
 
 #endif /* CHUNKER_H_ */

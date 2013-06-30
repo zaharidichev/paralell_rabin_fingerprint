@@ -18,4 +18,18 @@ typedef struct {
 	int shift; // size of shift when adding a byte
 } rabinData;
 
+
+typedef struct threadBounds {
+	int start;
+	int end;
+	int BPwritePosition;
+} threadBounds;
+
+typedef struct chunkingContext {
+	int D;
+	int Ddash;
+	int minThr;
+	int maxThr;
+} chunkingContext;
+
 #endif /* RABINDATA_H_ */
