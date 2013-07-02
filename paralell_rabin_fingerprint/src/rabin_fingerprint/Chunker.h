@@ -17,13 +17,18 @@
 __device__ inline void addBreakPoint(int* breakpoints, int pos, int *positionInArray) {
 
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
+	if (id == 0) {
+		printf("%d,%d,%d\n", id, pos, (*positionInArray));
 
-	printf("%d,%d,%d\n", id, pos, (*positionInArray));
+	}
 
 	breakpoints[(*positionInArray)] = pos;
 	(*positionInArray)++;
 }
 
+__device__ int getID() {
+	return blockIdx.x * blockDim.x + threadIdx.x;
+}
 __device__ void printChunkData(int start, int end) {
 	int id = gridDim.x * gridDim.y * gridDim.z * blockDim.x * blockDim.y * blockDim.z;
 	printf("[%d] Chunk defined:[%d --- %d] [%d]\n", start, end, end - start, id);
@@ -37,6 +42,11 @@ __device__ void printResults_device(int* results, threadBounds b) {
 
 }
 
+// flipping bool values:)
+__device__ void flipSwitch(bool*swth) {
+	*swth = !(*swth);
+}
+
 __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, chunkingContext ctx, int* results) {
 
 	// create and initialize the local window buffer
@@ -47,61 +57,117 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBound
 
 	int pos = bounds.start; // the current position starting from a specific point
 	int lastBp = bounds.start; // the last breakpoint that was found
-	int backUpBp = 0; // the backup break point found by the secondary divisor
+
+	//int backUpBp = 0; // the backup break point found by the secondary divisor
 
 	int positionInArray = bounds.BPwritePosition;
 
-	int avgSize = 0;
-	int totalFound = 0;
+	bool freeModeToggle = true;
+	bool initialChunkFoundToggle = true;
+
+	//initting fingerprint...
+
+	if (getID() == 1) {
+		for (int var = bounds.start - 48; var < bounds.start; ++var) {
+			fingerprint = update(deviceRabin, data[var], fingerprint, &b);
+
+		}
+	}
+
+	//first phase
 
 	for (; pos < bounds.end; ++pos) {
 		fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
 
-		if (pos - lastBp < ctx.minThr) {
-			continue;
-		}
-
-		if (bitMod(fingerprint, ctx.Ddash) == ctx.Ddash - 1) {
-			backUpBp = pos;
-		}
-
 		if (bitMod(fingerprint, ctx.D) == ctx.D - 1) {
-
 			addBreakPoint(results, pos, &positionInArray);
-			avgSize = avgSize + (pos - lastBp);
-			totalFound++;
-			backUpBp = 0;
+			/*			if (ctx.minThr <= pos - lastBp <= ctx.maxThr - ctx.minThr) {
+			 lastBp = pos;
+			 break;
+			 }*/
 			lastBp = pos;
-			continue;
+
 		}
 
-		if (pos - lastBp < ctx.maxThr) {
-			continue;
-		}
-
-		if (backUpBp != 0) {
-
-			addBreakPoint(results, backUpBp, &positionInArray);
-
-			avgSize = avgSize + (backUpBp - lastBp);
-
-			totalFound++;
-			lastBp = backUpBp;
-			backUpBp = 0;
-		} else {
-
-			addBreakPoint(results, pos, &positionInArray);
-
-			avgSize = avgSize + (pos - lastBp);
-
-			totalFound++;
-			lastBp = pos;
-			backUpBp = 0;
-		}
 	}
 
+// third phase
+	/*
+	 for (; pos < bounds.end; ++pos) {
+	 fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
+
+	 if (pos - lastBp < ctx.minThr) {
+	 continue;
+	 }
+
+	 if (bitMod(fingerprint, ctx.D) == ctx.D - 1) {
+
+	 addBreakPoint(results, pos, &positionInArray);
+	 lastBp = pos;
+	 continue;
+	 }
+
+	 if (pos - lastBp < ctx.maxThr) {
+	 continue;
+	 } else {
+
+	 addBreakPoint(results, pos, &positionInArray);
+
+	 lastBp = pos;
+	 }
+
+	 }
+	 */
+
+/// bimodal chunking depricated for now ;0
+	/*	for (; pos < bounds.end; ++pos) {
+	 fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
+
+	 if (pos - lastBp < ctx.minThr) {
+	 continue;
+	 }
+
+	 if (bitMod(fingerprint, ctx.Ddash) == ctx.Ddash - 1) {
+	 backUpBp = pos;
+	 }
+
+	 if (bitMod(fingerprint, ctx.D) == ctx.D - 1) {
+
+	 addBreakPoint(results, pos, &positionInArray);
+	 avgSize = avgSize + (pos - lastBp);
+	 totalFound++;
+	 backUpBp = 0;
+	 lastBp = pos;
+	 continue;
+	 }
+
+	 if (pos - lastBp < ctx.maxThr) {
+	 continue;
+	 }
+
+	 if (backUpBp != 0) {
+
+	 addBreakPoint(results, backUpBp, &positionInArray);
+
+	 avgSize = avgSize + (backUpBp - lastBp);
+
+	 totalFound++;
+	 lastBp = backUpBp;
+	 backUpBp = 0;
+	 } else {
+
+	 addBreakPoint(results, pos, &positionInArray);
+
+	 avgSize = avgSize + (pos - lastBp);
+
+	 totalFound++;
+	 lastBp = pos;
+	 backUpBp = 0;
+	 }
+	 }*/
+
 	addBreakPoint(results, pos, &positionInArray);
-	//printResults_device(results,bounds);
+//printResults_device(results,bounds);
 }
 
 #endif /* CHUNKER_H_ */

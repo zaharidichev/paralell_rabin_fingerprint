@@ -27,7 +27,7 @@
 #define D_ 512
 #define D_DASH 256
 #define MIN_SIZE 32768
-#define MAX_SIZE 65536
+#define MAX_SIZE 131072
 
 // printf() is only supported
 // for devices of compute capability 2.0 and higher
@@ -40,7 +40,7 @@ void printChunkData_host(int start, int end) {
 }
 
 void printResults(int* results) {
-	for (int var = 0; var < 2; ++var) {
+	for (int var = 0; var < 1696; ++var) {
 		printf("Chunk defined: %d\n", results[var]);
 
 	}
@@ -68,6 +68,10 @@ __device__ void getThreadBounds(threadBounds* bounds, int dataLn, int minChunkSi
 
 	//ACCOUTN FOR ANY LEFTOVER DATA THAT CANNOT BE DISTRIBUTED ;)
 	bounds->end = (thrID == workingThreads - 1) ? bounds->end = dataLn : bounds->start + workPerThr;
+
+	if (thrID == 0 ) {
+		bounds->end = bounds->end + workPerThr;
+	}
 
 	bounds->BPwritePosition = maxBPsPerThread * thrID;
 }
