@@ -9,7 +9,7 @@
 #define RABINDATA_H_
 
 //typedef uint64_t POLY_64;
-typedef Polynomial_128 POLY_128;
+//typedef Polynomial_128 POLY_128;
 
 typedef struct {
 	POLY_64 Irreducble_PT;
@@ -22,7 +22,6 @@ typedef struct {
 typedef struct threadBounds {
 	int start;
 	int end;
-	int BPwritePosition;
 } threadBounds;
 
 typedef struct chunkingContext {

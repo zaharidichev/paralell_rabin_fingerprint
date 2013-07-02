@@ -48,9 +48,12 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.configuration.debug.1279271520.1309551720" name="kernelLauncher.cu" rcbsApplicability="disable" resourcePath="src/kernelLauncher.cu" toolsToInvoke="nvcc.compiler.base.1801752779.45814745">
+						<tool id="nvcc.compiler.base.1801752779.45814745" name="NVCC Compiler" superClass="nvcc.compiler.base.1801752779"/>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="GPU_code|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="kernelLauncher.cu" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

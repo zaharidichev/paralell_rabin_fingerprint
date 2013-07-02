@@ -17,7 +17,7 @@
 __device__ inline void addBreakPoint(int* breakpoints, int pos, int *positionInArray) {
 
 	int id = blockIdx.x * blockDim.x + threadIdx.x;
-	if (id == 0) {
+	if (id < 2) {
 		printf("%d,%d,%d\n", id, pos, (*positionInArray));
 
 	}
@@ -47,7 +47,7 @@ __device__ void flipSwitch(bool*swth) {
 	*swth = !(*swth);
 }
 
-__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, chunkingContext ctx, int* results) {
+__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, int D, bool* results, int activeThreads) {
 
 	// create and initialize the local window buffer
 	byteBuffer b;
@@ -55,41 +55,45 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBound
 
 	POLY_64 fingerprint = 0; // the fingerprint that will be used
 
-	int pos = bounds.start; // the current position starting from a specific point
-	int lastBp = bounds.start; // the last breakpoint that was found
+	//int pos = bounds.start; // the current position starting from a specific point
+	//int lastBp = bounds.start; // the last breakpoint that was found
 
 	//int backUpBp = 0; // the backup break point found by the secondary divisor
 
-	int positionInArray = bounds.BPwritePosition;
+	//int positionInArray = bounds.BPwritePosition;
 
-	bool freeModeToggle = true;
-	bool initialChunkFoundToggle = true;
+	//bool freeModeToggle = true;
+	//bool initialChunkFoundToggle = true;
 
 	//initting fingerprint...
 
-	if (getID() == 1) {
+	if (getID() != 0) {
+
 		for (int var = bounds.start - 48; var < bounds.start; ++var) {
 			fingerprint = update(deviceRabin, data[var], fingerprint, &b);
 
 		}
+
 	}
 
 	//first phase
 
-	for (; pos < bounds.end; ++pos) {
+	for (int pos = bounds.start; pos < bounds.end; ++pos) {
 		fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
 
-		if (bitMod(fingerprint, ctx.D) == ctx.D - 1) {
-			addBreakPoint(results, pos, &positionInArray);
-			/*			if (ctx.minThr <= pos - lastBp <= ctx.maxThr - ctx.minThr) {
-			 lastBp = pos;
-			 break;
-			 }*/
-			lastBp = pos;
+		if (bitMod(fingerprint, D) == D - 1) {
 
+/*			if (getID() == activeThreads-1) {
+				printf("%d\n", pos);
+			}*/
+
+			results[pos] = true;
 		}
-
 	}
+
+	//printf("%d, %d, %d\n", getID(), bounds.start, bounds.end);
+
+	//addBreakPoint(results, -1, &positionInArray);
 
 // third phase
 	/*
@@ -166,7 +170,7 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBound
 	 }
 	 }*/
 
-	addBreakPoint(results, pos, &positionInArray);
+	//addBreakPoint(results, pos, &positionInArray);
 //printResults_device(results,bounds);
 }
 

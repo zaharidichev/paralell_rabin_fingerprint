@@ -35,17 +35,28 @@
 #define printf(f, ...) ((void)(f, __VA_ARGS__),0)
 #endif
 
-void printChunkData_host(int start, int end) {
-	printf("Chunk defined:[%d --- %d] [%d]\n", start, end, end - start);
-}
+void fuseBreakPoints(int* rawBPs, int *fusedBPs) {
+	int posInFused = 0;
+	int lastBP = 0;
+	for (int i = 0; i < SIZE; ++i) {
 
-void printResults(int* results) {
-	for (int var = 0; var < 1696; ++var) {
-		printf("Chunk defined: %d\n", results[var]);
+		if (rawBPs[i] - lastBP < MIN_SIZE) {
+			continue;
+		}
+		if (MIN_SIZE <= rawBPs[i] - lastBP <= MAX_SIZE) {
+			lastBP = rawBPs[i];
+			fusedBPs[posInFused] = rawBPs[i];
+			posInFused++;
+		} else {
+			fusedBPs[i] = lastBP + MAX_SIZE;
+			lastBP = lastBP + MAX_SIZE;
+			i = lastBP;
+
+		}
 
 	}
 
-	//printf("Chunks on CPU: %d , Avg size: %d\n", cnt, size / cnt);
+	fusedBPs[++posInFused] = -1;
 }
 
 __device__ int getTotalThreads() {
@@ -69,11 +80,11 @@ __device__ void getThreadBounds(threadBounds* bounds, int dataLn, int minChunkSi
 	//ACCOUTN FOR ANY LEFTOVER DATA THAT CANNOT BE DISTRIBUTED ;)
 	bounds->end = (thrID == workingThreads - 1) ? bounds->end = dataLn : bounds->start + workPerThr;
 
-	if (thrID == 0 ) {
-		bounds->end = bounds->end + workPerThr;
-	}
+	/*	if (thrID == 0 ) {
+	 bounds->end = bounds->end + workPerThr;
+	 }*/
 
-	bounds->BPwritePosition = maxBPsPerThread * thrID;
+	bounds->BPwritePosition = workPerThr * thrID;
 }
 
 int getNumNeededThreads(int dataLn, int minWorkPerThread) {
@@ -102,7 +113,7 @@ int* allocateBPResultsArray(int sizeOfInput, int minThreshold) {
 		exit(1);															\
 	} }
 
-__global__ void RabinExample(rabinData* deviceRabin, BYTE* data, int from, int to, int* results, int threadsUsed, int sizeOfBPArray, int BpsPerThread) {
+__global__ void findBreakPoints(rabinData* deviceRabin, BYTE* data, int from, int to, int* results, int threadsUsed, int sizeOfBPArray, int BpsPerThread) {
 
 	int thrID = getThrID();
 
@@ -110,9 +121,6 @@ __global__ void RabinExample(rabinData* deviceRabin, BYTE* data, int from, int t
 //		/printf("%d,%d -----> %d [%d] \n", thrID, dataBounds.start, dataBounds.end, dataBounds.BPwritePosition);
 
 		threadBounds dataBounds;
-		/*		dataBounds.BPwritePosition = 1;
-		 dataBounds.start = 1;
-		 dataBounds.end = 2;*/
 
 		getThreadBounds(&dataBounds, SIZE, MIN_SIZE, threadsUsed, thrID, MIN_WORK, sizeOfBPArray, BpsPerThread);
 
@@ -127,14 +135,21 @@ __global__ void RabinExample(rabinData* deviceRabin, BYTE* data, int from, int t
 	}
 }
 
+
+
+
+
+
 /**
  * main function that just launced the kernel and takes care of book kepping
  */
 
-int main() {
+int p() {
 
 	int size = SIZE;
-	int sizeOfBParray = getSizeOfBPArray(size, MIN_SIZE);
+	//int sizeOfBParray = getSizeOfBPArray(size, MIN_SIZE);
+
+	int sizeOfBParray = size;
 
 	printf("size of BP array %d\n", sizeOfBParray);
 
@@ -189,17 +204,27 @@ int main() {
 	int bpsPerThread = round(((double) (sizeOfBParray)) / threadsNeeded);
 	//printf("BP per thread %d\n", sizeOfBParray);
 
-	RabinExample<<<numBlocks, blocksize>>>(deviceData, dataToFingerprint_d, 0, size, resultingBreakpoints_d, threadsNeeded, sizeOfBParray, bpsPerThread);
+	findBreakPoints<<<numBlocks, blocksize>>>(deviceData, dataToFingerprint_d, 0, size, resultingBreakpoints_d, threadsNeeded, sizeOfBParray, bpsPerThread);
 
 //copy back into our supplied data
 	CUDA_CHECK_RETURN(cudaMemcpy(resultingBreakpoints, resultingBreakpoints_d, sizeof(int) * sizeOfBParray, cudaMemcpyDeviceToHost));
 
 // free all the memory alocated on the cardgetThreadBounds
+
 	CUDA_CHECK_RETURN(cudaFree(deviceData));
 	CUDA_CHECK_RETURN(cudaFree(dataToFingerprint_d));
 	CUDA_CHECK_RETURN(cudaFree(resultingBreakpoints_d));
 
 	//printResults(resultingBreakpoints);
+
+	int* fused = (int*) malloc(sizeof(int) * getSizeOfBPArray(SIZE, MIN_SIZE));
+
+	fuseBreakPoints(resultingBreakpoints, fused);
+
+	for (int var = 0; var < getSizeOfBPArray(SIZE, MIN_SIZE); ++var) {
+		printf("%d %d\n", fused[var], var);
+
+	}
 
 	free(data);
 	free(resultingBreakpoints);
