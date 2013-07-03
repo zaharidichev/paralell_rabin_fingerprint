@@ -7,6 +7,7 @@
 
 #include "stdio.h"
 #include "GPUChunker.h"
+#include "../GPU_code/BitFieldArray.h"
 
 typedef unsigned char BYTE;
 BYTE* allocateData(int size) {

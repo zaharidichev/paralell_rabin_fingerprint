@@ -63,6 +63,11 @@ chunkCOntainer GPUChunker::fuseChunks(bool* rawChunks, int min, int max, int dat
 	return result;
 }
 
+int GPUChunker::getSizeOfBitArray(int dataLn) {
+	return (dataLn % 32 == 0) ? dataLn / 32 : (dataLn / 32) + 1;
+
+}
+
 chunkCOntainer GPUChunker::chunkData(BYTE* dataToChunk, int dataLn, int minSize, int maxSize) {
 	int minWork = 262144;
 
@@ -70,6 +75,10 @@ chunkCOntainer GPUChunker::chunkData(BYTE* dataToChunk, int dataLn, int minSize,
 	BYTE* dataToFingerprint_d = uploadDataToDevice(dataToChunk, dataLn);
 
 	//allocate space for the raw breakpoints;
+
+	int numberOfBitWordsNeeded = getSizeOfBitArray(dataLn);
+
+	bitFieldArray * raw_results_d = createBitFieldArrayOnDevice(numberOfBitWordsNeeded);
 
 	bool* rawBreakPoints_d = allocateBPArrayOnDevice(dataLn);
 
