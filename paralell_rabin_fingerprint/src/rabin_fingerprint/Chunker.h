@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include "../rabin_fingerprint/RabinFingerprint.h"
 #include "cuda_runtime.h"
+#include "../chunking_system/GPU_code/BitFieldArray.h"
 //#include "/usr/local/cuda-5.0/samples/0_Simple/simplePrintf/cuPrintf.h"
 
 __device__ inline void addBreakPoint(int* breakpoints, int pos, int *positionInArray) {
@@ -42,12 +43,16 @@ __device__ void printResults_device(int* results, threadBounds b) {
 
 }
 
+__device__ void placeBreakPointBitsInField(bitFieldArray field, u_int32_t breakpoints, int pos) {
+	field.bits[pos] = breakpoints;
+}
+
 // flipping bool values:)
 __device__ void flipSwitch(bool*swth) {
 	*swth = !(*swth);
 }
 
-__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, int D, bool* results, int activeThreads) {
+__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, int D, bitFieldArray results, int activeThreads) {
 
 	// create and initialize the local window buffer
 	byteBuffer b;
@@ -78,18 +83,28 @@ __device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBound
 
 	//first phase
 
+	u_int32_t partialBreakPoints = 0;
 	for (int pos = bounds.start; pos < bounds.end; ++pos) {
 		fingerprint = update(deviceRabin, data[pos], fingerprint, &b);
 
 		if (bitMod(fingerprint, D) == D - 1) {
 
-/*			if (getID() == activeThreads-1) {
-				printf("%d\n", pos);
-			}*/
+			/*			if (getID() == activeThreads-1) {
+			 printf("%d\n", pos);
+			 }*/
 
-			results[pos] = true;
+			//results[pos] = true;
+			//setReverseBit(u_int32_t* word, int x)
+			setReverseBit(&partialBreakPoints, pos % 32);
+		}
+
+		if ((pos + 1) % 32 == 0 && pos != 0) {
+			placeBreakPointBitsInField(results, partialBreakPoints, pos / 32);
+			partialBreakPoints = 0;
 		}
 	}
+
+	placeBreakPointBitsInField(results, partialBreakPoints, (bounds.end - 1) / 32);
 
 	//printf("%d, %d, %d\n", getID(), bounds.start, bounds.end);
 

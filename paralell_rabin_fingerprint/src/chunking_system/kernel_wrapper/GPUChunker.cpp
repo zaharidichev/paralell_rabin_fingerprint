@@ -17,7 +17,7 @@ GPUChunker::GPUChunker(int RabinDivisor, POLY_64 irrPoly) {
 GPUChunker::~GPUChunker() {
 }
 
-chunkCOntainer GPUChunker::fuseChunks(bool* rawChunks, int min, int max, int dataLn) {
+chunkCOntainer GPUChunker::fuseChunks(bitFieldArray rawChunks, int min, int max, int dataLn) {
 	int maxSizeOfBPArrayNeeded = (dataLn / min) + 1;
 
 	int* fusedPoints = (int*) malloc(sizeof(int) * maxSizeOfBPArrayNeeded);
@@ -30,7 +30,7 @@ chunkCOntainer GPUChunker::fuseChunks(bool* rawChunks, int min, int max, int dat
 			continue;
 		}
 		if (min <= i - lastBP <= max) {
-			if (rawChunks[i]) {
+			if (getBit(i,&rawChunks)) {
 				fusedPoints[posInFusedArray] = i;
 				posInFusedArray++;
 				lastBP = i;
@@ -78,7 +78,7 @@ chunkCOntainer GPUChunker::chunkData(BYTE* dataToChunk, int dataLn, int minSize,
 
 	int numberOfBitWordsNeeded = getSizeOfBitArray(dataLn);
 
-	bitFieldArray * raw_results_d = createBitFieldArrayOnDevice(numberOfBitWordsNeeded);
+	bitFieldArray raw_results_d = createBitFieldArrayOnDevice(numberOfBitWordsNeeded);
 
 	bool* rawBreakPoints_d = allocateBPArrayOnDevice(dataLn);
 
@@ -92,14 +92,17 @@ chunkCOntainer GPUChunker::chunkData(BYTE* dataToChunk, int dataLn, int minSize,
 		++numBlocks;
 	}
 	//start kernel
-	startCreateBreakpointsKernel(blocksize, numBlocks, this->rabinData_d, dataToFingerprint_d, dataLn, rawBreakPoints_d, threadsNeeded, minWork, 512);
+	startCreateBreakpointsKernel(blocksize, numBlocks, this->rabinData_d, dataToFingerprint_d, dataLn, raw_results_d, threadsNeeded, minWork, 512);
 
 	//lets downlaod our raw results now...
-	bool* rawBreakPoints_h = downloadBreakPointFromDevice(rawBreakPoints_d, dataLn);
+
+	bitFieldArray results = downloadBitFieldArrayFromDevice(numberOfBitWordsNeeded,raw_results_d);
+
+
 
 	//and free the resources allocated
 	freeCudaResource(rawBreakPoints_d);
 	freeCudaResource(dataToFingerprint_d);
 
-	return fuseChunks(rawBreakPoints_h, minSize, maxSize, dataLn);
+	return fuseChunks(results, minSize, maxSize, dataLn);
 }

@@ -9,7 +9,8 @@
 #define KERNELSTARTER_H_
 #include "../../etc/DedupDefines.h"
 #include "../../rabin_fingerprint/RabinData.h"
-extern "C" void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* deviceRabin, BYTE* deviceData, int dataLen, bool* results,
+#include "BitFieldArray.h"
+extern "C" void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* deviceRabin, BYTE* deviceData, int dataLen, bitFieldArray results,
 		int threadsUsed, int workPerThread, int D);
 
 #endif /* KERNELSTARTER_H_ */

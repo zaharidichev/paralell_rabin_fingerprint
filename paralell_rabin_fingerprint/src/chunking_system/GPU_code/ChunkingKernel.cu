@@ -12,7 +12,7 @@
 #include  "cuda_runtime.h"
 #include "ResourceManagement.h"
 #include "KernelStarter.h"
-
+#include "BitFieldArray.h"
 __device__ int getThrID() {
 	return blockIdx.x * blockDim.x + threadIdx.x;
 }
@@ -26,7 +26,7 @@ __device__ void getThreadBounds(threadBounds* bounds, int dataLn, int threadsUse
 
 }
 
-__global__ void findBreakPoints(rabinData* deviceRabin, BYTE* data, int dataLen, bool* results, int threadsUsed, int workPerThread, int divisor) {
+__global__ void findBreakPoints(rabinData* deviceRabin, BYTE* data, int dataLen, bitFieldArray results, int threadsUsed, int workPerThread, int divisor) {
 
 	int thrID = getThrID();
 
@@ -44,11 +44,11 @@ __global__ void findBreakPoints(rabinData* deviceRabin, BYTE* data, int dataLen,
 		 ctx.minThr = MIN_SIZE;
 		 ctx.maxThr = MAX_SIZE;*/
 
-		chunkData(deviceRabin, data, dataBounds, divisor, results,threadsUsed);
+		chunkData(deviceRabin, data, dataBounds, divisor, results, threadsUsed);
 	}
 }
 
-void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* deviceRabin, BYTE* deviceData, int dataLen, bool* results, int threadsUsed,
+void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* deviceRabin, BYTE* deviceData, int dataLen, bitFieldArray results, int threadsUsed,
 		int workPerThread, int D) {
 	cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 5242880);
 
@@ -57,38 +57,38 @@ void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* devi
 }
 
 /*int f() {
-	////////////globals
-	int sizeOfData = 55574528;
-	int workPerThread = 262144;
+ ////////////globals
+ int sizeOfData = 55574528;
+ int workPerThread = 262144;
 
-	///////////////////////////
-	cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 5242880);
+ ///////////////////////////
+ cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 5242880);
 
-	rabinData* deviceData;
-	initRabinDataOnDevice(0xbfe6b8a5bf378d83, &deviceData);
+ rabinData* deviceData;
+ initRabinDataOnDevice(0xbfe6b8a5bf378d83, &deviceData);
 
-	BYTE* randomHostData = allocateData(sizeOfData);
-	BYTE* randomDeviceData;
-	uploadDataToDevice(randomHostData, &randomDeviceData, sizeOfData);
+ BYTE* randomHostData = allocateData(sizeOfData);
+ BYTE* randomDeviceData;
+ uploadDataToDevice(randomHostData, &randomDeviceData, sizeOfData);
 
-	bool* resultsDevice;
-	allocateBPArrayOnDevice(&resultsDevice, sizeOfData);
+ bool* resultsDevice;
+ allocateBPArrayOnDevice(&resultsDevice, sizeOfData);
 
-	int numberThreads = getNumNeededThreads(sizeOfData, workPerThread);
+ int numberThreads = getNumNeededThreads(sizeOfData, workPerThread);
 
-	int blocksize = 160;
+ int blocksize = 160;
 
-	int numBlocks = numberThreads / blocksize;
-	if (numberThreads % blocksize) {
-		++numBlocks;
-	}
-	//printf("%d %d", numBlocks, blocksize);
-	findBreakPoints<<<numBlocks, blocksize>>>(deviceData, randomDeviceData, sizeOfData, resultsDevice, numberThreads, workPerThread, 512);
+ int numBlocks = numberThreads / blocksize;
+ if (numberThreads % blocksize) {
+ ++numBlocks;
+ }
+ //printf("%d %d", numBlocks, blocksize);
+ findBreakPoints<<<numBlocks, blocksize>>>(deviceData, randomDeviceData, sizeOfData, resultsDevice, numberThreads, workPerThread, 512);
 
-	CUDA_CHECK_RETURN(cudaFree(deviceData));
-	CUDA_CHECK_RETURN(cudaFree(randomDeviceData));
-	CUDA_CHECK_RETURN(cudaFree(resultsDevice));
+ CUDA_CHECK_RETURN(cudaFree(deviceData));
+ CUDA_CHECK_RETURN(cudaFree(randomDeviceData));
+ CUDA_CHECK_RETURN(cudaFree(resultsDevice));
 
-}*/
+ }*/
 
 #endif /* CHUNKINGKERNEL_CU_ */

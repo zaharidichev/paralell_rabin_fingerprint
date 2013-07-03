@@ -11,13 +11,14 @@
 #include "../../etc/DedupDefines.h"
 #include "ChunkContainer.h"
 #include "string.h"
+#include "../GPU_code/BitFieldArray.h"
 class GPUChunker {
 
 private:
 	POLY_64 irrPoly;
 	int rabinDivisor;
 	rabinData* rabinData_d;
-	chunkCOntainer fuseChunks(bool* rawChunks, int min, int max, int dataLn);
+	chunkCOntainer fuseChunks(bitFieldArray rawChunks, int min, int max, int dataLn);
 	int getSizeOfBitArray(int dataLn);
 public:
 	GPUChunker(int RabinDivisor, POLY_64 irrPoly);
