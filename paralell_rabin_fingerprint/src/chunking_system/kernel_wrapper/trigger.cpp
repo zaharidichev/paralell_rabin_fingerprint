@@ -23,22 +23,26 @@ BYTE* allocateData(int size) {
 }
 
 int main() {
+
 	int sizeOfData = 536870912;
 	int minSize = 32768;
 	int maxSize = 131072;
 
 	BYTE* dataToChunk = allocateData(sizeOfData);
 
-	GPUChunker chunker = GPUChunker(512, 0xbfe6b8a5bf378d83);
 
-	chunkCOntainer chunks = chunker.chunkData(dataToChunk, sizeOfData, minSize, maxSize);
+	GPUChunker chunker = GPUChunker(512, 0xbfe6b8a5bf378d83,minSize,maxSize);
 
-	printf("REAL CHUNKS\n");
-	for (int var = 0; var < chunks.size; ++var) {
-		printf("%d\n", chunks.breakpoints[var]);
-	}
+	 vector<shared_ptr<Chunk> > chunks =  chunker.chunkDataExperimental(dataToChunk, sizeOfData);
+
+
+
+	 for(std::vector<shared_ptr<Chunk> >::iterator it = chunks.begin(); it != chunks.end(); ++it) {
+		 std::cout << *((*it).get()) << std::endl;
+	 }
+
+
 
 	free(dataToChunk);
-	free(chunks.breakpoints);
 
 }

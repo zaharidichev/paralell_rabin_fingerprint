@@ -8,45 +8,45 @@
 #include "cuda_runtime.h"
 #include "../../etc/helpers/Macros.h"
 #include "stdio.h"
+#include "boost/shared_ptr.hpp"
 #ifndef BITFIELDARRAY_H_
 #define BITFIELDARRAY_H_
+using namespace boost;
+typedef u_int32_t* bitFieldArray;
 
-typedef struct bitFieldArray {
-	u_int32_t* bits;
-	size_t size;
-} bitFieldArray;
+inline __host__ void fluchBitfieldFufferOnDevice(bitFieldArray array, size_t size) {
+
+	CUDA_CHECK_RETURN(cudaMemset(array, 0, sizeof(u_int32_t) * size));
+}
 
 inline __host__ bitFieldArray createBitFieldArrayOnDevice(size_t size) {
 
-	bitFieldArray array_h;
-	array_h.size = size;
 	bitFieldArray array_d;
 
 	//uploading the structure to the device
-	cudaMalloc((void**) &array_d, sizeof(bitFieldArray));
+	//cudaMalloc((void**) &array_d, sizeof(bitFieldArray));
 	//CUDA_CHECK_RETURN(cudaMemcpy(&array_d, &array_h, sizeof(bitFieldArray), cudaMemcpyHostToDevice));
 
 	//now we need to allocate space for the actual results...
-	CUDA_CHECK_RETURN(cudaMalloc((void** ) &(array_d.bits), sizeof(u_int32_t) * size));
-	CUDA_CHECK_RETURN(cudaMemset(array_d.bits, 0, sizeof(u_int32_t) * size));
+	CUDA_CHECK_RETURN(cudaMalloc((void** ) &array_d, sizeof(u_int32_t) * size));
+	CUDA_CHECK_RETURN(cudaMemset(array_d, 0, sizeof(u_int32_t) * size));
 	return array_d;
 }
 
 inline __host__ bitFieldArray downloadBitFieldArrayFromDevice(size_t size, bitFieldArray array_dev) {
 
 	bitFieldArray array_h;
-	array_h.size = size;
-	array_h.bits = (u_int32_t*) malloc(sizeof(u_int32_t) * size);
-	CUDA_CHECK_RETURN(cudaMemcpy(array_h.bits, array_dev.bits, sizeof(u_int32_t) * size, cudaMemcpyDeviceToHost));
+	array_h = (u_int32_t*) malloc(sizeof(u_int32_t) * size);
+
+	CUDA_CHECK_RETURN(cudaMemcpy(array_h, array_dev, sizeof(u_int32_t) * size, cudaMemcpyDeviceToHost));
 	return array_h;
 }
 
-inline __device__ __host__ void setWord(int pos, u_int32_t word, bitFieldArray* array) {
-	array->bits[pos] = word;
+inline __device__ __host__ void setWord(int pos, u_int32_t word, bitFieldArray array) {
+	array[pos] = word;
 }
 
-inline __host__ void destroyBitFieldArray(bitFieldArray* array) {
-	CUDA_CHECK_RETURN(cudaFree(array->bits));
+inline __host__ void destroyBitFieldArray(bitFieldArray array) {
 	CUDA_CHECK_RETURN(cudaFree(array));
 }
 
@@ -59,10 +59,10 @@ inline __device__ __host__ void setReverseBit(u_int32_t* word, int x) {
 	setBit(word, index);
 }
 
-inline __host__ bool getBit(size_t pos, bitFieldArray* array) {
+inline __host__ bool getBit(size_t pos, bitFieldArray array) {
 	int posInArray = (pos) / 32;
 	int bitIndex = 31 - (pos % 32);
-	return (array->bits[posInArray] & (1 << bitIndex));
+	return (array[posInArray] & (1 << bitIndex));
 
 }
 

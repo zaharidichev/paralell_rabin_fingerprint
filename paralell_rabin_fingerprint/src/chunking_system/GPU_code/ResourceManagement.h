@@ -16,7 +16,6 @@ inline bool* allocateBPArrayOnDevice(int sizeOfData) {
 	bool* breakpoints_d;
 	CUDA_CHECK_RETURN(cudaMalloc((void** ) &breakpoints_d, sizeof(bool) * sizeOfData));
 	CUDA_CHECK_RETURN(cudaMemset((void* )breakpoints_d, 0, sizeof(bool) * sizeOfData));
-
 	return breakpoints_d;
 }
 
@@ -32,9 +31,19 @@ inline BYTE* uploadDataToDevice(BYTE* hostData, int size) {
 
 	CUDA_CHECK_RETURN(cudaMalloc((void** ) &dataToFingerprint_d, sizeof(BYTE) * size));
 	CUDA_CHECK_RETURN(cudaMemcpy(dataToFingerprint_d, hostData, sizeof(BYTE) * size, cudaMemcpyHostToDevice));
-
 	return dataToFingerprint_d;
 
+}
+
+inline BYTE* allocateDeviceBuffer(size_t size) {
+	BYTE* bufferPtr_d;
+	CUDA_CHECK_RETURN(cudaMalloc((void** ) &bufferPtr_d, sizeof(BYTE) * size))
+	return bufferPtr_d;
+}
+
+inline void uploadDataToDeviceBuffer(BYTE* hostData, BYTE* devBuffer, size_t offset, size_t size) {
+	//hostData = hostData + offset;
+	CUDA_CHECK_RETURN(cudaMemcpy(devBuffer, hostData, sizeof(BYTE) * size, cudaMemcpyHostToDevice));
 }
 
 inline rabinData* initRabinDataOnDevice(POLY_64 irrPoly) {

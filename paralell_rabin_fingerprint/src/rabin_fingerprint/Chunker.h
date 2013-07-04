@@ -44,7 +44,7 @@ __device__ void printResults_device(int* results, threadBounds b) {
 }
 
 __device__ void placeBreakPointBitsInField(bitFieldArray field, u_int32_t breakpoints, int pos) {
-	field.bits[pos] = breakpoints;
+	field[pos] = breakpoints;
 }
 
 // flipping bool values:)

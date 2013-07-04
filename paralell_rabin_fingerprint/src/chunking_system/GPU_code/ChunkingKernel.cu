@@ -13,6 +13,19 @@
 #include "ResourceManagement.h"
 #include "KernelStarter.h"
 #include "BitFieldArray.h"
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+
+
+inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess)
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
 __device__ int getThrID() {
 	return blockIdx.x * blockDim.x + threadIdx.x;
 }
@@ -52,7 +65,11 @@ void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* devi
 		int workPerThread, int D) {
 	cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 5242880);
 
+
 	findBreakPoints<<<numBlocks, blocksSize>>>(deviceRabin, deviceData, dataLen, results, threadsUsed, workPerThread, D);
+
+	gpuErrchk( cudaGetLastError() );
+
 	cudaThreadSynchronize();
 }
 

@@ -12,18 +12,31 @@
 #include "ChunkContainer.h"
 #include "string.h"
 #include "../GPU_code/BitFieldArray.h"
+#include "boost/shared_ptr.hpp"
+#include "Chunk.h"
+#include <vector>
+#include "ChunkFuser.h"
+#include "../GPU_code/ResourceManagement.h"
+
+using namespace std;
+using namespace boost;
+
 class GPUChunker {
 
 private:
 	POLY_64 irrPoly;
 	int rabinDivisor;
+	size_t minSize;
+	size_t maxSize;
 	rabinData* rabinData_d;
 	chunkCOntainer fuseChunks(bitFieldArray rawChunks, int min, int max, int dataLn);
 	int getSizeOfBitArray(int dataLn);
+	shared_ptr<ChunkFuser> fuser;
 public:
-	GPUChunker(int RabinDivisor, POLY_64 irrPoly);
+	GPUChunker(int RabinDivisor, POLY_64 irrPoly, size_t minSize, size_t maxSize);
 	virtual ~GPUChunker();
-	chunkCOntainer chunkData(BYTE* dataToChunk, int dataLn, int minSize, int maxSize);
+	vector<shared_ptr<Chunk> > chunkData(BYTE* dataToChunk, int dataLn);
+	vector<shared_ptr<Chunk> > chunkDataExperimental(BYTE* dataToChunk, int dataLn);
 };
 
 #endif /* GPUCHUNKER_H_ */
