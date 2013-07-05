@@ -42,7 +42,7 @@ inline BYTE* allocateDeviceBuffer(size_t size) {
 }
 
 inline void uploadDataToDeviceBuffer(BYTE* hostData, BYTE* devBuffer, size_t offset, size_t size) {
-	//hostData = hostData + offset;
+	hostData = hostData + offset;
 	CUDA_CHECK_RETURN(cudaMemcpy(devBuffer, hostData, sizeof(BYTE) * size, cudaMemcpyHostToDevice));
 }
 

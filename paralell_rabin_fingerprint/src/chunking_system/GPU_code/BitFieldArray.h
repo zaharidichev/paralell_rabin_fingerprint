@@ -14,7 +14,7 @@
 using namespace boost;
 typedef u_int32_t* bitFieldArray;
 
-inline __host__ void fluchBitfieldFufferOnDevice(bitFieldArray array, size_t size) {
+inline __host__ void flushBitfieldFufferOnDevice(bitFieldArray array, size_t size) {
 
 	CUDA_CHECK_RETURN(cudaMemset(array, 0, sizeof(u_int32_t) * size));
 }
