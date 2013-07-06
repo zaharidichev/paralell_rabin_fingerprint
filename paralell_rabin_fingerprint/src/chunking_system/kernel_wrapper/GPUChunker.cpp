@@ -73,52 +73,12 @@ int GPUChunker::getSizeOfBitArray(int dataLn) {
 
 }
 
-vector<shared_ptr<Chunk> > GPUChunker::chunkData(BYTE* dataToChunk, int dataLn) {
-
-	int minWork = 262144;
-
-	// we first need to upload the data to the device :)
-
-	BYTE* dataToFingerprint_d = uploadDataToDevice(dataToChunk, dataLn);
-
-	//allocate space for the raw breakpoints;
-
-	int numberOfBitWordsNeeded = getSizeOfBitArray(dataLn);
-
-	bitFieldArray raw_results_d = createBitFieldArrayOnDevice(numberOfBitWordsNeeded);
-
-	bool* rawBreakPoints_d = allocateBPArrayOnDevice(dataLn);
-
-	// calcualte thread heuristics
-	int threadsNeeded = getNumNeededThreads(dataLn, minWork);
-
-	int blocksize = 160;
-
-	int numBlocks = threadsNeeded / blocksize;
-	if (threadsNeeded % blocksize) {
-		++numBlocks;
-	}
-
-	//start kernel
-	startCreateBreakpointsKernel(blocksize, numBlocks, this->rabinData_d, dataToFingerprint_d, dataLn, raw_results_d, threadsNeeded, minWork, 512);
-
-	//lets downlaod our raw results now...
-
-	shared_ptr<u_int32_t> results(downloadBitFieldArrayFromDevice(numberOfBitWordsNeeded, raw_results_d));
-
-	(*fuser.get()).addRawBreakPoints(results, dataLn, 0);
-
-	//and free the resources allocated
-	freeCudaResource(rawBreakPoints_d);
-	freeCudaResource(dataToFingerprint_d);
-
-	return this->fuser.get()->getChunks();
-}
-
-vector<shared_ptr<Chunk> > GPUChunker::chunkDataExperimental(BYTE* dataToChunk, int dataLn) {
+vector<shared_ptr<Chunk> > GPUChunker::chunkData(BYTE* dataToChunk, size_t dataLn) {
 	int minWorkPerThread = 262144;
-	int binaryDataBuffer_d = 268435456;
 
+	int binaryDataBuffer_d = min(getDeviceBufferSize(), dataLn);
+
+	//min()
 	// calcualte the number of kernels that need to be started to compelte the data
 	int numBatches = dataLn / binaryDataBuffer_d;
 	if (dataLn % binaryDataBuffer_d != 0) {
@@ -141,7 +101,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkDataExperimental(BYTE* dataToChunk, 
 		printf("Batch_size: %d\n", lengthOfBatch);
 
 		// uplaod the data from the binary array to the device buffer
-		uploadDataToDeviceBuffer(dataToChunk, dataToFingerprint_d,  + (i * lengthOfBatch),lengthOfBatch);
+		uploadDataToDeviceBuffer(dataToChunk, dataToFingerprint_d, +(i * lengthOfBatch), lengthOfBatch);
 		//flush the fingeprrint buffer..
 		flushBitfieldFufferOnDevice(raw_results_d, numberOfBitWordsNeeded);
 
@@ -172,5 +132,67 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkDataExperimental(BYTE* dataToChunk, 
 	freeCudaResource(dataToFingerprint_d);
 	// and return the chunks produced by the fuser
 	return this->fuser.get()->getChunks();
+
+}
+
+vector<shared_ptr<Chunk> > GPUChunker::chunkDataFromFile(ifstream& file, size_t dataLn) {
+
+	int minWorkPerThread = 262144;
+	int bufferSize = min(getDeviceBufferSize(), dataLn);
+
+	int numBatches = dataLn / bufferSize;
+	if (dataLn % bufferSize != 0) {
+		numBatches++;
+	}
+
+	BYTE* hostBuffer = (BYTE*)malloc(sizeof(BYTE) * bufferSize);
+	BYTE* deviceBuffer = allocateDeviceBuffer(bufferSize);
+	int numberOfBitWordsNeeded = getSizeOfBitArray(bufferSize);
+	bitFieldArray raw_results_d = createBitFieldArrayOnDevice(numberOfBitWordsNeeded);
+
+
+	for (int i = 0; i < numBatches; ++i) {
+
+		int lengthOfBatch = bufferSize; // calcualte the current lenght of data that will be worked on by the kernel
+		if (i == numBatches - 1 && dataLn % bufferSize != 0) {
+			lengthOfBatch = dataLn % bufferSize;
+		}
+		//read into buffer ....
+		for (int var = 0; var < lengthOfBatch; ++var) {
+			hostBuffer[var] = file.get();
+		}
+
+
+		// uplaod the data from the binary array to the device buffer
+		uploadDataToDeviceBuffer(hostBuffer, deviceBuffer,0, lengthOfBatch);
+		//flush the fingeprrint buffer..
+		flushBitfieldFufferOnDevice(raw_results_d, numberOfBitWordsNeeded);
+
+		//calculate launch parameters
+		int threadsNeeded = getNumNeededThreads(lengthOfBatch, minWorkPerThread);
+		int blocksize = 160;
+		int numBlocks = threadsNeeded / blocksize;
+		if (threadsNeeded % blocksize) {
+			++numBlocks;
+		}
+
+		//start kernel
+		startCreateBreakpointsKernel(blocksize, numBlocks, this->rabinData_d, deviceBuffer, lengthOfBatch, raw_results_d, threadsNeeded,
+				minWorkPerThread, 512);
+
+		//calculate how many breakpoints need to be downladoed from the buffer, based on the lenght of the data fingerpinted by the kernel
+		int numberOfBitWordsNeeded = getSizeOfBitArray(lengthOfBatch);
+
+		//get the raw pointes and feed the mto the fuser
+		shared_ptr<u_int32_t> results(downloadBitFieldArrayFromDevice(numberOfBitWordsNeeded, raw_results_d));
+		(*fuser.get()).addRawBreakPoints(results, lengthOfBatch, i * lengthOfBatch);
+
+	}
+
+	freeCudaResource(raw_results_d);
+	freeCudaResource(deviceBuffer);
+	// and return the chunks produced by the fuser
+	return this->fuser.get()->getChunks();
+
 
 }

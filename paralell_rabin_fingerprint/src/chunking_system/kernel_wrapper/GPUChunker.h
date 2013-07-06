@@ -17,6 +17,8 @@
 #include <vector>
 #include "ChunkFuser.h"
 #include "../GPU_code/ResourceManagement.h"
+#include <iostream>     // std::cin, std::cout
+#include <fstream>      // std::ifstream
 
 using namespace std;
 using namespace boost;
@@ -35,8 +37,10 @@ private:
 public:
 	GPUChunker(int RabinDivisor, POLY_64 irrPoly, size_t minSize, size_t maxSize);
 	virtual ~GPUChunker();
-	vector<shared_ptr<Chunk> > chunkData(BYTE* dataToChunk, int dataLn);
-	vector<shared_ptr<Chunk> > chunkDataExperimental(BYTE* dataToChunk, int dataLn);
+	vector<shared_ptr<Chunk> > chunkData(BYTE* dataToChunk, size_t dataLn);
+	vector<shared_ptr<Chunk> > chunkDataFromFile(ifstream& file, size_t dataLn);
+
+
 };
 
 #endif /* GPUCHUNKER_H_ */

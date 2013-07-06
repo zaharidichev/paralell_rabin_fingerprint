@@ -57,7 +57,7 @@ __global__ void findBreakPoints(rabinData* deviceRabin, BYTE* data, int dataLen,
 		 ctx.minThr = MIN_SIZE;
 		 ctx.maxThr = MAX_SIZE;*/
 
-		chunkData(deviceRabin, data, dataBounds, divisor, results, threadsUsed);
+		chunkDataFreeMode(deviceRabin, data, dataBounds, divisor, results, threadsUsed);
 	}
 }
 

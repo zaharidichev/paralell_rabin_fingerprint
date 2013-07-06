@@ -68,4 +68,17 @@ template<typename T> void freeCudaResource(T* resrcPtr) {
 	CUDA_CHECK_RETURN(cudaFree(resrcPtr));
 }
 
+inline size_t getDeviceBufferSize() {
+
+	int device;
+	cudaGetDevice(&device);
+
+	cudaDeviceProp properties;
+	cudaGetDeviceProperties(&properties, device);
+
+	printf("%d\n", properties.totalGlobalMem);
+	size_t sizeOfBuffer = ((properties.totalGlobalMem / 67108864) - 1) * 67108864;
+	return sizeOfBuffer;
+}
+
 #endif /* FUNKYFUNKS_H_ */

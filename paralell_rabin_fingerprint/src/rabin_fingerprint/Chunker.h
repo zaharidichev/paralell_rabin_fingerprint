@@ -52,7 +52,7 @@ __device__ void flipSwitch(bool*swth) {
 	*swth = !(*swth);
 }
 
-__device__ inline void chunkData(rabinData* deviceRabin, BYTE* data, threadBounds bounds, int D, bitFieldArray results, int activeThreads) {
+__device__ inline void chunkDataFreeMode(rabinData* deviceRabin, BYTE* data, threadBounds bounds, int D, bitFieldArray results, int activeThreads) {
 
 	// create and initialize the local window buffer
 	byteBuffer b;

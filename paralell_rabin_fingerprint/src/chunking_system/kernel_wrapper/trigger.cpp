@@ -28,12 +28,15 @@ int main() {
 	int minSize = 32768;
 	int maxSize = 131072;
 
-	BYTE* dataToChunk = allocateData(sizeOfData);
+	//const char* dataToChunk = (const char*)allocateData(sizeOfData);
 
+	  std::ifstream infile ("/home/zahari/Desktop/data.txt",std::ofstream::binary);
+
+	  //outfile.write (dataToChunk,sizeOfData);
 
 	GPUChunker chunker = GPUChunker(512, 0xbfe6b8a5bf378d83,minSize,maxSize);
 
-	 vector<shared_ptr<Chunk> > chunks =  chunker.chunkDataExperimental(dataToChunk, sizeOfData);
+	 vector<shared_ptr<Chunk> > chunks =  chunker.chunkDataFromFile(infile,sizeOfData);
 
 
 
@@ -43,6 +46,7 @@ int main() {
 
 
 
-	free(dataToChunk);
+
+	//free(dataToChunk);
 
 }
