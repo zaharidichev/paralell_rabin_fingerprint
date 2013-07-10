@@ -19,7 +19,6 @@
 #include "../GPU_code/ResourceManagement.h"
 #include <iostream>     // std::cin, std::cout
 #include <fstream>      // std::ifstream
-
 using namespace std;
 using namespace boost;
 
@@ -40,6 +39,7 @@ public:
 	vector<shared_ptr<Chunk> > chunkData(BYTE* dataToChunk, size_t dataLn);
 	vector<shared_ptr<Chunk> > chunkDataFromFile(ifstream& file, size_t dataLn);
 
+	vector<shared_ptr<Chunk> > chunkAndHashDataFromFile(ifstream& file, size_t dataLn);
 
 };
 

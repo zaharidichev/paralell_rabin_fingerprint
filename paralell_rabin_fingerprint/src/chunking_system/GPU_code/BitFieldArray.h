@@ -11,6 +11,7 @@
 #include "boost/shared_ptr.hpp"
 #ifndef BITFIELDARRAY_H_
 #define BITFIELDARRAY_H_
+
 using namespace boost;
 typedef u_int32_t* bitFieldArray;
 

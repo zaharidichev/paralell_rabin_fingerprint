@@ -37,6 +37,9 @@
 								<inputType id="nvcc.compiler.input.c.909192213" superClass="nvcc.compiler.input.c"/>
 							</tool>
 							<tool id="nvcc.linker.base.132480467" name="NVCC Linker" superClass="nvcc.linker.base">
+								<option id="nvcc.linker.option.libs.333636474" name="Libraries (-l)" superClass="nvcc.linker.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="ssl"/>
+								</option>
 								<inputType id="nvcc.linker.input.1573428468" superClass="nvcc.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
@@ -48,11 +51,8 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.nvidia.cuda.ide.configuration.debug.1279271520.1309551720" name="kernelLauncher.cu" rcbsApplicability="disable" resourcePath="src/kernelLauncher.cu" toolsToInvoke="nvcc.compiler.base.1801752779.45814745">
-						<tool id="nvcc.compiler.base.1801752779.45814745" name="NVCC Compiler" superClass="nvcc.compiler.base.1801752779"/>
-					</fileInfo>
 					<sourceEntries>
-						<entry excluding="GPU_code|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="GPU_code|hashing|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="kernelLauncher.cu" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -109,9 +109,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="kernel_wrapper|GPU_code|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="hashing|kernel_wrapper|GPU_code|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="chunking_system/kernel_wrapper|chunking_system/GPU_code" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/GPU_code"/>
+						<entry excluding="hashing" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/GPU_code"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/GPU_code/hashing"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/kernel_wrapper"/>
 					</sourceEntries>
 				</configuration>

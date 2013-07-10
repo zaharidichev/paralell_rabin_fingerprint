@@ -7,15 +7,15 @@
 
 #include "Chunk.h"
 
-
-
 Chunk::Chunk(size_t start, size_t end) {
 	this->start = start;
 	this->end = end;
 	this->size = this->end - this->start;
+	this->hash = (BYTE*) malloc(20);
 }
 
 Chunk::~Chunk() {
+	free(this->hash);
 
 }
 #include <iostream>
@@ -32,7 +32,26 @@ size_t Chunk::getSize() {
 	return this->end - this->start;
 }
 
-ostream& operator << (ostream& output, const Chunk& ch) {
-	output << "[" << ch.start << " - " << ch.end << "] [" << ch.size << "]";
+ostream& operator <<(ostream& output, const Chunk& ch) {
+	output << "[" << ch.start << " - " << ch.end << "] [" << ch.size << "] [";
+	cout.setf(ios::hex, ios::basefield);
+
+	for (int var = 0; var < 20; ++var) {
+		cout << HEX(ch.hash[var]);
+
+	}
+
+	cout.unsetf(ios::hex);
+
+	output << "]";
+
 	return output;
+}
+
+void Chunk::setHash(BYTE* hash) {
+	this->hash = hash;
+}
+
+BYTE* Chunk::getHash() {
+	return this->hash;
 }

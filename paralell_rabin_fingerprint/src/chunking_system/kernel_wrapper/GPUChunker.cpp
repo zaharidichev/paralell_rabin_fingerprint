@@ -21,7 +21,6 @@ GPUChunker::~GPUChunker() {
 }
 
 chunkCOntainer GPUChunker::fuseChunks(bitFieldArray rawChunks, int min, int max, int dataLn) {
-	printf("HELLLOOOOO");
 
 	int maxSizeOfBPArrayNeeded = (dataLn / min) + 1;
 
@@ -78,6 +77,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkData(BYTE* dataToChunk, size_t dataL
 
 	int binaryDataBuffer_d = min(getDeviceBufferSize(), dataLn);
 
+
 	//min()
 	// calcualte the number of kernels that need to be started to compelte the data
 	int numBatches = dataLn / binaryDataBuffer_d;
@@ -122,7 +122,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkData(BYTE* dataToChunk, size_t dataL
 
 		//get the raw pointes and feed the mto the fuser
 		shared_ptr<u_int32_t> results(downloadBitFieldArrayFromDevice(numberOfBitWordsNeeded, raw_results_d));
-		(*fuser.get()).addRawBreakPoints(results, lengthOfBatch, i * lengthOfBatch);
+		(*fuser.get()).addRawBreakPoints(results, lengthOfBatch, i * lengthOfBatch,dataToChunk,dataToFingerprint_d);
 
 	}
 
@@ -139,7 +139,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkDataFromFile(ifstream& file, size_t 
 
 	int minWorkPerThread = 262144;
 	int bufferSize = min(getDeviceBufferSize(), dataLn);
-
+	//int bufferSize = 16777216;
 	int numBatches = dataLn / bufferSize;
 	if (dataLn % bufferSize != 0) {
 		numBatches++;
@@ -185,7 +185,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkDataFromFile(ifstream& file, size_t 
 
 		//get the raw pointes and feed the mto the fuser
 		shared_ptr<u_int32_t> results(downloadBitFieldArrayFromDevice(numberOfBitWordsNeeded, raw_results_d));
-		(*fuser.get()).addRawBreakPoints(results, lengthOfBatch, i * lengthOfBatch);
+		(*fuser.get()).addRawBreakPoints(results, lengthOfBatch, i * lengthOfBatch,hostBuffer,deviceBuffer);
 
 	}
 
@@ -195,4 +195,7 @@ vector<shared_ptr<Chunk> > GPUChunker::chunkDataFromFile(ifstream& file, size_t 
 	return this->fuser.get()->getChunks();
 
 
+}
+
+vector<shared_ptr<Chunk> > GPUChunker::chunkAndHashDataFromFile(ifstream& file, size_t dataLn) {
 }
