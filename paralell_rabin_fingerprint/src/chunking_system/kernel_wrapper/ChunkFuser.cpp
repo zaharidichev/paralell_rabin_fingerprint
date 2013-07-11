@@ -163,7 +163,7 @@ void ChunkFuser::hashFusedChunks(vector<shared_ptr<Chunk> > chunksToHash, size_t
 
 
 
-	 createHashes(devBuffer, breakpoints_dev, hashes_dev, chunksToHash.size());
+	 //createHashes(devBuffer, breakpoints_dev, hashes_dev, chunksToHash.size());
 
 
 	 printf("Breakpoint\n");

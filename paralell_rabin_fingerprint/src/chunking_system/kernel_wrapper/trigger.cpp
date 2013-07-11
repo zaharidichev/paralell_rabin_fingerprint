@@ -24,47 +24,36 @@ BYTE* allocateData(int size) {
 
 int main() {
 
-	int sizeOfData = 536870912;
+	int sizeOfData = 737233947;
 	int minSize = 32768;
 	int maxSize = 131072;
 
 	//const char* dataToChunk = (const char*)allocateData(sizeOfData);
 
-	  std::ifstream infile ("/home/zahari/Desktop/data.txt",std::ofstream::binary);
-	  unsigned char* buffer = (unsigned char*)malloc(33363);
+	std::ifstream infile("/home/zahari/Desktop/2.6_kernels_merged.dat", std::ofstream::binary);
 
-	  //infile.seekg(67076482);
+	GPUChunker chunker = GPUChunker(512, 0xbfe6b8a5bf378d83, minSize, maxSize);
+	std::vector<shared_ptr<Chunk> > chunks = chunker.chunkFile_segmented(infile, sizeOfData, minSize, maxSize);
 
-	    infile.seekg (535857225);
+	for (std::vector<shared_ptr<Chunk> >::iterator it = chunks.begin(); it != chunks.end(); ++it) {
+		std::cout << *((*it).get()) << std::endl;
+	}
 
-	  infile.read((char*)buffer,33363);
-	  BYTE* digest = (BYTE*)malloc(20);
+	printf("----------------------------\n");
 
-	  SHA1(buffer,33363,digest);
+	unsigned char* buffer = (unsigned char*) malloc(15859);
 
-	  for (int var = 0; var < 20; ++var) {
-	        printf("%02x", digest[var]);
+	infile.seekg(737218088);
+
+	infile.read((char*) buffer, 15859);
+	BYTE* digest = (BYTE*) malloc(20);
+
+	SHA1(buffer, 15859, digest);
+
+	for (int var = 0; var < 20; ++var) {
+		printf("%02x", digest[var]);
 
 	}
-	 printf("\n");
-
-	  //outfile.write (dataToChunk,sizeOfData);
-
-
-	infile.seekg (0, infile.beg);
-	GPUChunker chunker = GPUChunker(512, 0xbfe6b8a5bf378d83,minSize,maxSize);
-
-	 vector<shared_ptr<Chunk> > chunks =  chunker.chunkDataFromFile(infile,sizeOfData);
-
-
-//
-	 for(std::vector<shared_ptr<Chunk> >::iterator it = chunks.begin(); it != chunks.end(); ++it) {
-		 std::cout << *((*it).get()) << std::endl;
-	 }
-
-
-
-
-	//free(dataToChunk);
+	printf("\n");
 
 }

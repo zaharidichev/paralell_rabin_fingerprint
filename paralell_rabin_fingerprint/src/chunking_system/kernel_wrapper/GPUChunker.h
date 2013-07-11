@@ -19,6 +19,7 @@
 #include "../GPU_code/ResourceManagement.h"
 #include <iostream>     // std::cin, std::cout
 #include <fstream>      // std::ifstream
+#include <math.h>
 using namespace std;
 using namespace boost;
 
@@ -30,10 +31,21 @@ private:
 	size_t minSize;
 	size_t maxSize;
 	rabinData* rabinData_d;
+
+	size_t getNumberOfBatches(size_t dataLn, size_t GPUbufferSize);
+
 	chunkCOntainer fuseChunks(bitFieldArray rawChunks, int min, int max, int dataLn);
 	int getSizeOfBitArray(int dataLn);
 	shared_ptr<ChunkFuser> fuser;
+
+	std::vector<boost::shared_ptr<Chunk> > performSegmentedChunkingAndHashing(size_t blocksSize, size_t numBlocks, size_t activeThreads, BYTE* hostBuffer,
+			BYTE* deviceBuffer, BYTE* hashes_d, int* results, size_t dataLen, size_t posOffset, rabinData* rabinData_d, chunkingContext* ctx_d);
+
+
+	size_t getLengthOfCurrentBatch(int itteration, size_t bufferSize, size_t numBatches,size_t dataLn);
 public:
+	std::vector<boost::shared_ptr<Chunk> > chunkFile_segmented(ifstream& file, size_t dataLn, size_t minThr, size_t maxThr);
+
 	GPUChunker(int RabinDivisor, POLY_64 irrPoly, size_t minSize, size_t maxSize);
 	virtual ~GPUChunker();
 	vector<shared_ptr<Chunk> > chunkData(BYTE* dataToChunk, size_t dataLn);

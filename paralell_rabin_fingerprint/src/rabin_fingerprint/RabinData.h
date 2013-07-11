@@ -29,6 +29,10 @@ typedef struct chunkingContext {
 	int Ddash;
 	int minThr;
 	int maxThr;
+	int workPerThread;
+	int sizeOfBreakpointsArray;
+	int BpreakpointsPerThread;
+
 } chunkingContext;
 
 #endif /* RABINDATA_H_ */

@@ -13,4 +13,7 @@
 extern "C" void startCreateBreakpointsKernel(int blocksSize, int numBlocks, rabinData* deviceRabin, BYTE* deviceData, int dataLen, bitFieldArray results,
 		int threadsUsed, int workPerThread, int D);
 
+extern "C" void startSegmentedChunkingAndHashingKernel(size_t blocksSize, size_t numBlocks, rabinData* rabinData_d, chunkingContext* ctx_d, BYTE* dataToChunk_d,
+		size_t sizeOfData, size_t activeThreads, BYTE* hashed_d, int* results_d);
+
 #endif /* KERNELSTARTER_H_ */

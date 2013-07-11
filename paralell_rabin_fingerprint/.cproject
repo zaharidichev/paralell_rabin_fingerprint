@@ -51,6 +51,9 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.nvidia.cuda.ide.configuration.debug.1279271520.2079492795" name="trigger.cpp" rcbsApplicability="disable" resourcePath="src/chunking_system/kernel_wrapper/trigger.cpp" toolsToInvoke="nvcc.compiler.base.1801752779.2114044130">
+						<tool id="nvcc.compiler.base.1801752779.2114044130" name="NVCC Compiler" superClass="nvcc.compiler.base.1801752779"/>
+					</fileInfo>
 					<sourceEntries>
 						<entry excluding="GPU_code|hashing|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="kernelLauncher.cu" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
