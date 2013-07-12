@@ -106,7 +106,7 @@ typedef struct {
 /*--------------------------------------------------------------------------
  GLOBAL VARIABLES
  --------------------------------------------------------------------------*/
- __device__
+__device__
 const unsigned char sha1_padding[64] = { 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -477,7 +477,7 @@ void sha1_internal(unsigned char *input, int ilen, unsigned char *output) {
 }
 
 /*#ifdef FEATURE_SHARED_MEMORY
-===========================================================================
+ ===========================================================================
 
  FUNCTION SHA1_INTERNAL
 
@@ -492,94 +492,94 @@ void sha1_internal(unsigned char *input, int ilen, unsigned char *output) {
 
  ===========================================================================
 
-inline __device__
-unsigned int macroRFunction(int t, unsigned int *sharedMemory) {
-	return sharedMemory[SHARED_MEMORY_INDEX((t - 3) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX((t - 8) & 0x0F)]
-			^ sharedMemory[SHARED_MEMORY_INDEX((t - 14) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX( t & 0x0F)];
-}*/
+ inline __device__
+ unsigned int macroRFunction(int t, unsigned int *sharedMemory) {
+ return sharedMemory[SHARED_MEMORY_INDEX((t - 3) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX((t - 8) & 0x0F)]
+ ^ sharedMemory[SHARED_MEMORY_INDEX((t - 14) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX( t & 0x0F)];
+ }*/
 
 /*
-inline __device__
-void sha1_internal(unsigned int *input, unsigned int *sharedMemory, unsigned int chunkSize, unsigned char *output) {
+ inline __device__
+ void sha1_internal(unsigned int *input, unsigned int *sharedMemory, unsigned int chunkSize, unsigned char *output) {
 
-	 Number of passes (512 bit blocks) we have to do
-	int numberOfPasses = chunkSize / 64 + 1;
-	 Used during the hashing process
-	unsigned int temp, A, B, C, D, E;
-	//unsigned int shared14, shared15;
-	 Needed to do the little endian stuff
-	unsigned char *data = (unsigned char *) sharedMemory;
+ Number of passes (512 bit blocks) we have to do
+ int numberOfPasses = chunkSize / 64 + 1;
+ Used during the hashing process
+ unsigned int temp, A, B, C, D, E;
+ //unsigned int shared14, shared15;
+ Needed to do the little endian stuff
+ unsigned char *data = (unsigned char *) sharedMemory;
 
-	 Will hold the hash value through the
-	 intermediate stages of SHA1 algorithm
-	unsigned int state0 = 0x67452301;
-	unsigned int state1 = 0xEFCDAB89;
-	unsigned int state2 = 0x98BADCFE;
-	unsigned int state3 = 0x10325476;
-	unsigned int state4 = 0xC3D2E1F0;
+ Will hold the hash value through the
+ intermediate stages of SHA1 algorithm
+ unsigned int state0 = 0x67452301;
+ unsigned int state1 = 0xEFCDAB89;
+ unsigned int state2 = 0x98BADCFE;
+ unsigned int state3 = 0x10325476;
+ unsigned int state4 = 0xC3D2E1F0;
 
-	for (int index = 0; index < (numberOfPasses); index++) {
+ for (int index = 0; index < (numberOfPasses); index++) {
 
-		 Move data to the thread's shared memory space
-		sharedMemory[SHARED_MEMORY_INDEX(0)] = input[0 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(1)] = input[1 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(2)] = input[2 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(3)] = input[3 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(4)] = input[4 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(5)] = input[5 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(6)] = input[6 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(7)] = input[7 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(8)] = input[8 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(9)] = input[9 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(10)] = input[10 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(11)] = input[11 + 16 * index];
-		sharedMemory[SHARED_MEMORY_INDEX(12)] = input[12 + 16 * index];
+ Move data to the thread's shared memory space
+ sharedMemory[SHARED_MEMORY_INDEX(0)] = input[0 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(1)] = input[1 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(2)] = input[2 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(3)] = input[3 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(4)] = input[4 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(5)] = input[5 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(6)] = input[6 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(7)] = input[7 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(8)] = input[8 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(9)] = input[9 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(10)] = input[10 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(11)] = input[11 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(12)] = input[12 + 16 * index];
 
-		 Testing the code with and without this if statement shows that
-		 it has no effect on performance.
-		if (index == numberOfPasses - 1) {
-			 The last pass will contain the size of the chunk size (according to
-			 official SHA1 algorithm).
+ Testing the code with and without this if statement shows that
+ it has no effect on performance.
+ if (index == numberOfPasses - 1) {
+ The last pass will contain the size of the chunk size (according to
+ official SHA1 algorithm).
 
-			sharedMemory[SHARED_MEMORY_INDEX(13)] = 0x00000080;
-			PUT_UINT32_BE(chunkSize >> 29, data, SHARED_MEMORY_INDEX(14) * 4);
-			PUT_UINT32_BE(chunkSize << 3, data, SHARED_MEMORY_INDEX(15) * 4);
-		} else {
-			sharedMemory[SHARED_MEMORY_INDEX(13)] = input[13 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(14)] = input[14 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(15)] = input[15 + 16 * index];
-		}
+ sharedMemory[SHARED_MEMORY_INDEX(13)] = 0x00000080;
+ PUT_UINT32_BE(chunkSize >> 29, data, SHARED_MEMORY_INDEX(14) * 4);
+ PUT_UINT32_BE(chunkSize << 3, data, SHARED_MEMORY_INDEX(15) * 4);
+ } else {
+ sharedMemory[SHARED_MEMORY_INDEX(13)] = input[13 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(14)] = input[14 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(15)] = input[15 + 16 * index];
+ }
 
-		 Get the little endian stuff done.
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(0)], data, SHARED_MEMORY_INDEX(0) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(1)], data, SHARED_MEMORY_INDEX(1) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(2)], data, SHARED_MEMORY_INDEX(2) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(3)], data, SHARED_MEMORY_INDEX(3) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(4)], data, SHARED_MEMORY_INDEX(4) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(5)], data, SHARED_MEMORY_INDEX(5) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(6)], data, SHARED_MEMORY_INDEX(6) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(7)], data, SHARED_MEMORY_INDEX(7) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(8)], data, SHARED_MEMORY_INDEX(8) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(9)], data, SHARED_MEMORY_INDEX(9) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(10)], data, SHARED_MEMORY_INDEX(10) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(11)], data, SHARED_MEMORY_INDEX(11) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(12)], data, SHARED_MEMORY_INDEX(12) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(13)], data, SHARED_MEMORY_INDEX(13) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(14)], data, SHARED_MEMORY_INDEX(14) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(15)], data, SHARED_MEMORY_INDEX(15) * 4);
+ Get the little endian stuff done.
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(0)], data, SHARED_MEMORY_INDEX(0) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(1)], data, SHARED_MEMORY_INDEX(1) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(2)], data, SHARED_MEMORY_INDEX(2) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(3)], data, SHARED_MEMORY_INDEX(3) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(4)], data, SHARED_MEMORY_INDEX(4) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(5)], data, SHARED_MEMORY_INDEX(5) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(6)], data, SHARED_MEMORY_INDEX(6) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(7)], data, SHARED_MEMORY_INDEX(7) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(8)], data, SHARED_MEMORY_INDEX(8) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(9)], data, SHARED_MEMORY_INDEX(9) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(10)], data, SHARED_MEMORY_INDEX(10) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(11)], data, SHARED_MEMORY_INDEX(11) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(12)], data, SHARED_MEMORY_INDEX(12) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(13)], data, SHARED_MEMORY_INDEX(13) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(14)], data, SHARED_MEMORY_INDEX(14) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(15)], data, SHARED_MEMORY_INDEX(15) * 4);
 
-#undef S
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+ #undef S
+ #define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
 
-#undef R
-#define R(t)                                            \
+ #undef R
+ #define R(t)                                            \
 (                                                       \
     temp = macroRFunction(t, sharedMemory) ,      \
     ( sharedMemory[SHARED_MEMORY_INDEX(t & 0x0F)] = S(temp,1) )       \
 )
 
 
-		 #define R(t)                                            \
+ #define R(t)                                            \
 (                                                       \
     temp = sharedMemory[SHARED_MEMORY_INDEX((t -  3) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX((t - 8) & 0x0F)] ^     \
            sharedMemory[SHARED_MEMORY_INDEX((t - 14) & 0x0F)] ^ sharedMemory[SHARED_MEMORY_INDEX( t      & 0x0F)],      \
@@ -587,375 +587,375 @@ void sha1_internal(unsigned int *input, unsigned int *sharedMemory, unsigned int
 )
 
 
-#undef P
-#define P(a,b,c,d,e,x)                                  \
+ #undef P
+ #define P(a,b,c,d,e,x)                                  \
 {                                                       \
     e += S(a,5) + F(b,c,d) + K + x; b = S(b,30);        \
 }
 
-		A = state0;
-		B = state1;
-		C = state2;
-		D = state3;
-		E = state4;
+ A = state0;
+ B = state1;
+ C = state2;
+ D = state3;
+ E = state4;
 
-#define F(x,y,z) (z ^ (x & (y ^ z)))
-#define K 0x5A827999
+ #define F(x,y,z) (z ^ (x & (y ^ z)))
+ #define K 0x5A827999
 
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(0)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(1)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(2)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(3)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(4)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(5)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(6)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(7)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(8)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(9)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(10)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(11)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(12)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(13)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(14)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(15)]);
-		P(E, A, B, C, D, R(16));
-		P(D, E, A, B, C, R(17));
-		P(C, D, E, A, B, R(18));
-		P(B, C, D, E, A, R(19));
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(0)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(1)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(2)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(3)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(4)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(5)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(6)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(7)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(8)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(9)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(10)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(11)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(12)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(13)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(14)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(15)]);
+ P(E, A, B, C, D, R(16));
+ P(D, E, A, B, C, R(17));
+ P(C, D, E, A, B, R(18));
+ P(B, C, D, E, A, R(19));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define K 0x6ED9EBA1
+ #define F(x,y,z) (x ^ y ^ z)
+ #define K 0x6ED9EBA1
 
-		P(A, B, C, D, E, R(20));
-		P(E, A, B, C, D, R(21));
-		P(D, E, A, B, C, R(22));
-		P(C, D, E, A, B, R(23));
-		P(B, C, D, E, A, R(24));
-		P(A, B, C, D, E, R(25));
-		P(E, A, B, C, D, R(26));
-		P(D, E, A, B, C, R(27));
-		P(C, D, E, A, B, R(28));
-		P(B, C, D, E, A, R(29));
-		P(A, B, C, D, E, R(30));
-		P(E, A, B, C, D, R(31));
-		P(D, E, A, B, C, R(32));
-		P(C, D, E, A, B, R(33));
-		P(B, C, D, E, A, R(34));
-		P(A, B, C, D, E, R(35));
-		P(E, A, B, C, D, R(36));
-		P(D, E, A, B, C, R(37));
-		P(C, D, E, A, B, R(38));
-		P(B, C, D, E, A, R(39));
+ P(A, B, C, D, E, R(20));
+ P(E, A, B, C, D, R(21));
+ P(D, E, A, B, C, R(22));
+ P(C, D, E, A, B, R(23));
+ P(B, C, D, E, A, R(24));
+ P(A, B, C, D, E, R(25));
+ P(E, A, B, C, D, R(26));
+ P(D, E, A, B, C, R(27));
+ P(C, D, E, A, B, R(28));
+ P(B, C, D, E, A, R(29));
+ P(A, B, C, D, E, R(30));
+ P(E, A, B, C, D, R(31));
+ P(D, E, A, B, C, R(32));
+ P(C, D, E, A, B, R(33));
+ P(B, C, D, E, A, R(34));
+ P(A, B, C, D, E, R(35));
+ P(E, A, B, C, D, R(36));
+ P(D, E, A, B, C, R(37));
+ P(C, D, E, A, B, R(38));
+ P(B, C, D, E, A, R(39));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) ((x & y) | (z & (x | y)))
-#define K 0x8F1BBCDC
+ #define F(x,y,z) ((x & y) | (z & (x | y)))
+ #define K 0x8F1BBCDC
 
-		P(A, B, C, D, E, R(40));
-		P(E, A, B, C, D, R(41));
-		P(D, E, A, B, C, R(42));
-		P(C, D, E, A, B, R(43));
-		P(B, C, D, E, A, R(44));
-		P(A, B, C, D, E, R(45));
-		P(E, A, B, C, D, R(46));
-		P(D, E, A, B, C, R(47));
-		P(C, D, E, A, B, R(48));
-		P(B, C, D, E, A, R(49));
-		P(A, B, C, D, E, R(50));
-		P(E, A, B, C, D, R(51));
-		P(D, E, A, B, C, R(52));
-		P(C, D, E, A, B, R(53));
-		P(B, C, D, E, A, R(54));
-		P(A, B, C, D, E, R(55));
-		P(E, A, B, C, D, R(56));
-		P(D, E, A, B, C, R(57));
-		P(C, D, E, A, B, R(58));
-		P(B, C, D, E, A, R(59));
+ P(A, B, C, D, E, R(40));
+ P(E, A, B, C, D, R(41));
+ P(D, E, A, B, C, R(42));
+ P(C, D, E, A, B, R(43));
+ P(B, C, D, E, A, R(44));
+ P(A, B, C, D, E, R(45));
+ P(E, A, B, C, D, R(46));
+ P(D, E, A, B, C, R(47));
+ P(C, D, E, A, B, R(48));
+ P(B, C, D, E, A, R(49));
+ P(A, B, C, D, E, R(50));
+ P(E, A, B, C, D, R(51));
+ P(D, E, A, B, C, R(52));
+ P(C, D, E, A, B, R(53));
+ P(B, C, D, E, A, R(54));
+ P(A, B, C, D, E, R(55));
+ P(E, A, B, C, D, R(56));
+ P(D, E, A, B, C, R(57));
+ P(C, D, E, A, B, R(58));
+ P(B, C, D, E, A, R(59));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define K 0xCA62C1D6
+ #define F(x,y,z) (x ^ y ^ z)
+ #define K 0xCA62C1D6
 
-		P(A, B, C, D, E, R(60));
-		P(E, A, B, C, D, R(61));
-		P(D, E, A, B, C, R(62));
-		P(C, D, E, A, B, R(63));
-		P(B, C, D, E, A, R(64));
-		P(A, B, C, D, E, R(65));
-		P(E, A, B, C, D, R(66));
-		P(D, E, A, B, C, R(67));
-		P(C, D, E, A, B, R(68));
-		P(B, C, D, E, A, R(69));
-		P(A, B, C, D, E, R(70));
-		P(E, A, B, C, D, R(71));
-		P(D, E, A, B, C, R(72));
-		P(C, D, E, A, B, R(73));
-		P(B, C, D, E, A, R(74));
-		P(A, B, C, D, E, R(75));
-		P(E, A, B, C, D, R(76));
-		P(D, E, A, B, C, R(77));
-		P(C, D, E, A, B, R(78));
-		P(B, C, D, E, A, R(79));
+ P(A, B, C, D, E, R(60));
+ P(E, A, B, C, D, R(61));
+ P(D, E, A, B, C, R(62));
+ P(C, D, E, A, B, R(63));
+ P(B, C, D, E, A, R(64));
+ P(A, B, C, D, E, R(65));
+ P(E, A, B, C, D, R(66));
+ P(D, E, A, B, C, R(67));
+ P(C, D, E, A, B, R(68));
+ P(B, C, D, E, A, R(69));
+ P(A, B, C, D, E, R(70));
+ P(E, A, B, C, D, R(71));
+ P(D, E, A, B, C, R(72));
+ P(C, D, E, A, B, R(73));
+ P(B, C, D, E, A, R(74));
+ P(A, B, C, D, E, R(75));
+ P(E, A, B, C, D, R(76));
+ P(D, E, A, B, C, R(77));
+ P(C, D, E, A, B, R(78));
+ P(B, C, D, E, A, R(79));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-		state0 += A;
-		state1 += B;
-		state2 += C;
-		state3 += D;
-		state4 += E;
-	}
+ state0 += A;
+ state1 += B;
+ state2 += C;
+ state3 += D;
+ state4 += E;
+ }
 
-	 Got the hash, store it in the output buffer.
-	PUT_UINT32_BE(state0, output, 0);
-//#ifndef FEATURE_REDUCED_HASH_SIZE
-	PUT_UINT32_BE(state1, output, 4);
-	PUT_UINT32_BE(state2, output, 8);
-	PUT_UINT32_BE(state3, output, 12);
-	PUT_UINT32_BE(state4, output, 16);
-//#endif
+ Got the hash, store it in the output buffer.
+ PUT_UINT32_BE(state0, output, 0);
+ //#ifndef FEATURE_REDUCED_HASH_SIZE
+ PUT_UINT32_BE(state1, output, 4);
+ PUT_UINT32_BE(state2, output, 8);
+ PUT_UINT32_BE(state3, output, 12);
+ PUT_UINT32_BE(state4, output, 16);
+ //#endif
 
-}
+ }
 
-inline __device__
-void sha1_internal_overlap(unsigned int *input, unsigned int *sharedMemory, unsigned int chunkSize, unsigned char *output) {
+ inline __device__
+ void sha1_internal_overlap(unsigned int *input, unsigned int *sharedMemory, unsigned int chunkSize, unsigned char *output) {
 
-	 Number of passes (512 bit blocks) we have to do
-	int numberOfPasses = chunkSize / 64 + 1;
-	 Used during the hashing process
-	unsigned int temp, A, B, C, D, E;
-	//unsigned int shared14, shared15;
-	 Needed to do the big endian stuff
-	unsigned char *data = (unsigned char *) sharedMemory;
-	// number of padding bytes.
-	int numPadBytes = 0;
-	int numPadInt = 0;
-	//int numPadRemain = 0;
+ Number of passes (512 bit blocks) we have to do
+ int numberOfPasses = chunkSize / 64 + 1;
+ Used during the hashing process
+ unsigned int temp, A, B, C, D, E;
+ //unsigned int shared14, shared15;
+ Needed to do the big endian stuff
+ unsigned char *data = (unsigned char *) sharedMemory;
+ // number of padding bytes.
+ int numPadBytes = 0;
+ int numPadInt = 0;
+ //int numPadRemain = 0;
 
-	 Will hold the hash value through the
-	 intermediate stages of SHA1 algorithm
-	unsigned int state0 = 0x67452301;
-	unsigned int state1 = 0xEFCDAB89;
-	unsigned int state2 = 0x98BADCFE;
-	unsigned int state3 = 0x10325476;
-	unsigned int state4 = 0xC3D2E1F0;
+ Will hold the hash value through the
+ intermediate stages of SHA1 algorithm
+ unsigned int state0 = 0x67452301;
+ unsigned int state1 = 0xEFCDAB89;
+ unsigned int state2 = 0x98BADCFE;
+ unsigned int state3 = 0x10325476;
+ unsigned int state4 = 0xC3D2E1F0;
 
-	for (int index = 0; index < (numberOfPasses); index++) {
+ for (int index = 0; index < (numberOfPasses); index++) {
 
-		if (index == numberOfPasses - 1) {
+ if (index == numberOfPasses - 1) {
 
-			numPadBytes = (64 - 12) - (chunkSize - (numberOfPasses - 1) * 64);
-			numPadInt = numPadBytes / sizeof(int);
+ numPadBytes = (64 - 12) - (chunkSize - (numberOfPasses - 1) * 64);
+ numPadInt = numPadBytes / sizeof(int);
 
-			int i;
-			for (i = 0; i < numPadInt; i++) {
-				sharedMemory[SHARED_MEMORY_INDEX(13-i)] = 0;
-			}
-			int j;
-			for (j = 0; j < (16 - 3 - numPadInt); j++) {
-				sharedMemory[SHARED_MEMORY_INDEX(j)] = input[j + 16 * index];
-			}
+ int i;
+ for (i = 0; i < numPadInt; i++) {
+ sharedMemory[SHARED_MEMORY_INDEX(13-i)] = 0;
+ }
+ int j;
+ for (j = 0; j < (16 - 3 - numPadInt); j++) {
+ sharedMemory[SHARED_MEMORY_INDEX(j)] = input[j + 16 * index];
+ }
 
-			 The last pass will contain the size of the chunk size (according to
-			 official SHA1 algorithm).
-			sharedMemory[SHARED_MEMORY_INDEX(13-i)] = 0x00000080;
-			PUT_UINT32_BE(chunkSize >> 29, data, SHARED_MEMORY_INDEX(14) * 4);
-			PUT_UINT32_BE(chunkSize << 3, data, SHARED_MEMORY_INDEX(15) * 4);
-		} else {
-			 Move data to the thread's shared memory space
-			sharedMemory[SHARED_MEMORY_INDEX(0)] = input[0 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(1)] = input[1 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(2)] = input[2 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(3)] = input[3 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(4)] = input[4 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(5)] = input[5 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(6)] = input[6 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(7)] = input[7 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(8)] = input[8 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(9)] = input[9 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(10)] = input[10 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(11)] = input[11 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(12)] = input[12 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(13)] = input[13 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(14)] = input[14 + 16 * index];
-			sharedMemory[SHARED_MEMORY_INDEX(15)] = input[15 + 16 * index];
-		}
+ The last pass will contain the size of the chunk size (according to
+ official SHA1 algorithm).
+ sharedMemory[SHARED_MEMORY_INDEX(13-i)] = 0x00000080;
+ PUT_UINT32_BE(chunkSize >> 29, data, SHARED_MEMORY_INDEX(14) * 4);
+ PUT_UINT32_BE(chunkSize << 3, data, SHARED_MEMORY_INDEX(15) * 4);
+ } else {
+ Move data to the thread's shared memory space
+ sharedMemory[SHARED_MEMORY_INDEX(0)] = input[0 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(1)] = input[1 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(2)] = input[2 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(3)] = input[3 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(4)] = input[4 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(5)] = input[5 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(6)] = input[6 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(7)] = input[7 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(8)] = input[8 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(9)] = input[9 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(10)] = input[10 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(11)] = input[11 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(12)] = input[12 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(13)] = input[13 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(14)] = input[14 + 16 * index];
+ sharedMemory[SHARED_MEMORY_INDEX(15)] = input[15 + 16 * index];
+ }
 
-		 Get the little endian stuff done.
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(0)], data, SHARED_MEMORY_INDEX(0) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(1)], data, SHARED_MEMORY_INDEX(1) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(2)], data, SHARED_MEMORY_INDEX(2) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(3)], data, SHARED_MEMORY_INDEX(3) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(4)], data, SHARED_MEMORY_INDEX(4) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(5)], data, SHARED_MEMORY_INDEX(5) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(6)], data, SHARED_MEMORY_INDEX(6) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(7)], data, SHARED_MEMORY_INDEX(7) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(8)], data, SHARED_MEMORY_INDEX(8) * 4);
-		GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(9)], data, SHARED_MEMORY_INDEX(9) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(10)], data, SHARED_MEMORY_INDEX(10) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(11)], data, SHARED_MEMORY_INDEX(11) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(12)], data, SHARED_MEMORY_INDEX(12) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(13)], data, SHARED_MEMORY_INDEX(13) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(14)], data, SHARED_MEMORY_INDEX(14) * 4);
-		GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(15)], data, SHARED_MEMORY_INDEX(15) * 4);
+ Get the little endian stuff done.
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(0)], data, SHARED_MEMORY_INDEX(0) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(1)], data, SHARED_MEMORY_INDEX(1) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(2)], data, SHARED_MEMORY_INDEX(2) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(3)], data, SHARED_MEMORY_INDEX(3) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(4)], data, SHARED_MEMORY_INDEX(4) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(5)], data, SHARED_MEMORY_INDEX(5) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(6)], data, SHARED_MEMORY_INDEX(6) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(7)], data, SHARED_MEMORY_INDEX(7) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(8)], data, SHARED_MEMORY_INDEX(8) * 4);
+ GET_UINT32_BE(sharedMemory[ SHARED_MEMORY_INDEX(9)], data, SHARED_MEMORY_INDEX(9) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(10)], data, SHARED_MEMORY_INDEX(10) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(11)], data, SHARED_MEMORY_INDEX(11) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(12)], data, SHARED_MEMORY_INDEX(12) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(13)], data, SHARED_MEMORY_INDEX(13) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(14)], data, SHARED_MEMORY_INDEX(14) * 4);
+ GET_UINT32_BE(sharedMemory[SHARED_MEMORY_INDEX(15)], data, SHARED_MEMORY_INDEX(15) * 4);
 
-#undef S
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+ #undef S
+ #define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
 
-#undef R
-#define R(t)								\
+ #undef R
+ #define R(t)								\
       (									\
 	 temp = macroRFunction(t, sharedMemory) ,			\
 	 ( sharedMemory[SHARED_MEMORY_INDEX(t & 0x0F)] = S(temp,1) )	\
 	 )
 
-#undef P
-#define P(a,b,c,d,e,x)                                  \
+ #undef P
+ #define P(a,b,c,d,e,x)                                  \
       {							\
 	 e += S(a,5) + F(b,c,d) + K + x; b = S(b,30);	\
       }
 
-		A = state0;
-		B = state1;
-		C = state2;
-		D = state3;
-		E = state4;
+ A = state0;
+ B = state1;
+ C = state2;
+ D = state3;
+ E = state4;
 
-#define F(x,y,z) (z ^ (x & (y ^ z)))
-#define K 0x5A827999
+ #define F(x,y,z) (z ^ (x & (y ^ z)))
+ #define K 0x5A827999
 
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(0)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(1)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(2)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(3)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(4)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(5)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(6)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(7)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(8)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(9)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(10)]);
-		P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(11)]);
-		P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(12)]);
-		P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(13)]);
-		P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(14)]);
-		P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(15)]);
-		P(E, A, B, C, D, R(16));
-		P(D, E, A, B, C, R(17));
-		P(C, D, E, A, B, R(18));
-		P(B, C, D, E, A, R(19));
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(0)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(1)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(2)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(3)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(4)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(5)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(6)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(7)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(8)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(9)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(10)]);
+ P(E, A, B, C, D, sharedMemory[ SHARED_MEMORY_INDEX(11)]);
+ P(D, E, A, B, C, sharedMemory[ SHARED_MEMORY_INDEX(12)]);
+ P(C, D, E, A, B, sharedMemory[ SHARED_MEMORY_INDEX(13)]);
+ P(B, C, D, E, A, sharedMemory[ SHARED_MEMORY_INDEX(14)]);
+ P(A, B, C, D, E, sharedMemory[ SHARED_MEMORY_INDEX(15)]);
+ P(E, A, B, C, D, R(16));
+ P(D, E, A, B, C, R(17));
+ P(C, D, E, A, B, R(18));
+ P(B, C, D, E, A, R(19));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define K 0x6ED9EBA1
+ #define F(x,y,z) (x ^ y ^ z)
+ #define K 0x6ED9EBA1
 
-		P(A, B, C, D, E, R(20));
-		P(E, A, B, C, D, R(21));
-		P(D, E, A, B, C, R(22));
-		P(C, D, E, A, B, R(23));
-		P(B, C, D, E, A, R(24));
-		P(A, B, C, D, E, R(25));
-		P(E, A, B, C, D, R(26));
-		P(D, E, A, B, C, R(27));
-		P(C, D, E, A, B, R(28));
-		P(B, C, D, E, A, R(29));
-		P(A, B, C, D, E, R(30));
-		P(E, A, B, C, D, R(31));
-		P(D, E, A, B, C, R(32));
-		P(C, D, E, A, B, R(33));
-		P(B, C, D, E, A, R(34));
-		P(A, B, C, D, E, R(35));
-		P(E, A, B, C, D, R(36));
-		P(D, E, A, B, C, R(37));
-		P(C, D, E, A, B, R(38));
-		P(B, C, D, E, A, R(39));
+ P(A, B, C, D, E, R(20));
+ P(E, A, B, C, D, R(21));
+ P(D, E, A, B, C, R(22));
+ P(C, D, E, A, B, R(23));
+ P(B, C, D, E, A, R(24));
+ P(A, B, C, D, E, R(25));
+ P(E, A, B, C, D, R(26));
+ P(D, E, A, B, C, R(27));
+ P(C, D, E, A, B, R(28));
+ P(B, C, D, E, A, R(29));
+ P(A, B, C, D, E, R(30));
+ P(E, A, B, C, D, R(31));
+ P(D, E, A, B, C, R(32));
+ P(C, D, E, A, B, R(33));
+ P(B, C, D, E, A, R(34));
+ P(A, B, C, D, E, R(35));
+ P(E, A, B, C, D, R(36));
+ P(D, E, A, B, C, R(37));
+ P(C, D, E, A, B, R(38));
+ P(B, C, D, E, A, R(39));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) ((x & y) | (z & (x | y)))
-#define K 0x8F1BBCDC
+ #define F(x,y,z) ((x & y) | (z & (x | y)))
+ #define K 0x8F1BBCDC
 
-		P(A, B, C, D, E, R(40));
-		P(E, A, B, C, D, R(41));
-		P(D, E, A, B, C, R(42));
-		P(C, D, E, A, B, R(43));
-		P(B, C, D, E, A, R(44));
-		P(A, B, C, D, E, R(45));
-		P(E, A, B, C, D, R(46));
-		P(D, E, A, B, C, R(47));
-		P(C, D, E, A, B, R(48));
-		P(B, C, D, E, A, R(49));
-		P(A, B, C, D, E, R(50));
-		P(E, A, B, C, D, R(51));
-		P(D, E, A, B, C, R(52));
-		P(C, D, E, A, B, R(53));
-		P(B, C, D, E, A, R(54));
-		P(A, B, C, D, E, R(55));
-		P(E, A, B, C, D, R(56));
-		P(D, E, A, B, C, R(57));
-		P(C, D, E, A, B, R(58));
-		P(B, C, D, E, A, R(59));
+ P(A, B, C, D, E, R(40));
+ P(E, A, B, C, D, R(41));
+ P(D, E, A, B, C, R(42));
+ P(C, D, E, A, B, R(43));
+ P(B, C, D, E, A, R(44));
+ P(A, B, C, D, E, R(45));
+ P(E, A, B, C, D, R(46));
+ P(D, E, A, B, C, R(47));
+ P(C, D, E, A, B, R(48));
+ P(B, C, D, E, A, R(49));
+ P(A, B, C, D, E, R(50));
+ P(E, A, B, C, D, R(51));
+ P(D, E, A, B, C, R(52));
+ P(C, D, E, A, B, R(53));
+ P(B, C, D, E, A, R(54));
+ P(A, B, C, D, E, R(55));
+ P(E, A, B, C, D, R(56));
+ P(D, E, A, B, C, R(57));
+ P(C, D, E, A, B, R(58));
+ P(B, C, D, E, A, R(59));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
-#define K 0xCA62C1D6
+ #define F(x,y,z) (x ^ y ^ z)
+ #define K 0xCA62C1D6
 
-		P(A, B, C, D, E, R(60));
-		P(E, A, B, C, D, R(61));
-		P(D, E, A, B, C, R(62));
-		P(C, D, E, A, B, R(63));
-		P(B, C, D, E, A, R(64));
-		P(A, B, C, D, E, R(65));
-		P(E, A, B, C, D, R(66));
-		P(D, E, A, B, C, R(67));
-		P(C, D, E, A, B, R(68));
-		P(B, C, D, E, A, R(69));
-		P(A, B, C, D, E, R(70));
-		P(E, A, B, C, D, R(71));
-		P(D, E, A, B, C, R(72));
-		P(C, D, E, A, B, R(73));
-		P(B, C, D, E, A, R(74));
-		P(A, B, C, D, E, R(75));
-		P(E, A, B, C, D, R(76));
-		P(D, E, A, B, C, R(77));
-		P(C, D, E, A, B, R(78));
-		P(B, C, D, E, A, R(79));
+ P(A, B, C, D, E, R(60));
+ P(E, A, B, C, D, R(61));
+ P(D, E, A, B, C, R(62));
+ P(C, D, E, A, B, R(63));
+ P(B, C, D, E, A, R(64));
+ P(A, B, C, D, E, R(65));
+ P(E, A, B, C, D, R(66));
+ P(D, E, A, B, C, R(67));
+ P(C, D, E, A, B, R(68));
+ P(B, C, D, E, A, R(69));
+ P(A, B, C, D, E, R(70));
+ P(E, A, B, C, D, R(71));
+ P(D, E, A, B, C, R(72));
+ P(C, D, E, A, B, R(73));
+ P(B, C, D, E, A, R(74));
+ P(A, B, C, D, E, R(75));
+ P(E, A, B, C, D, R(76));
+ P(D, E, A, B, C, R(77));
+ P(C, D, E, A, B, R(78));
+ P(B, C, D, E, A, R(79));
 
-#undef K
-#undef F
+ #undef K
+ #undef F
 
-		state0 += A;
-		state1 += B;
-		state2 += C;
-		state3 += D;
-		state4 += E;
-	}
+ state0 += A;
+ state1 += B;
+ state2 += C;
+ state3 += D;
+ state4 += E;
+ }
 
-	 Got the hash, store it in the output buffer.
-	PUT_UINT32_BE(state0, output, 0);
-//#ifndef FEATURE_REDUCED_HASH_SIZE
-	PUT_UINT32_BE(state1, output, 4);
-	PUT_UINT32_BE(state2, output, 8);
-	PUT_UINT32_BE(state3, output, 12);
-	PUT_UINT32_BE(state4, output, 16);
-//#endif
+ Got the hash, store it in the output buffer.
+ PUT_UINT32_BE(state0, output, 0);
+ //#ifndef FEATURE_REDUCED_HASH_SIZE
+ PUT_UINT32_BE(state1, output, 4);
+ PUT_UINT32_BE(state2, output, 8);
+ PUT_UINT32_BE(state3, output, 12);
+ PUT_UINT32_BE(state4, output, 16);
+ //#endif
 
-}
-#endif
-*/
+ }
+ #endif
+ */
 
 /*--------------------------------------------------------------------------
  GLOBAL FUNCTIONS
@@ -975,9 +975,7 @@ void sha1_internal_overlap(unsigned int *input, unsigned int *sharedMemory, unsi
 
  ===========================================================================*/
 
-
 /*--------------------------------------------------------------------------
  GLOBAL C FUNCTIONS
  --------------------------------------------------------------------------*/
-
 

@@ -24,7 +24,8 @@ private:
 	size_t start; // the start position of the chunk
 	size_t end; // the end position of the chunk
 	size_t size; // the size
-	BYTE* hash; //a pointer to the hash value of the chunk
+	boost::shared_ptr<BYTE> hash; //a pointer to the hash value of the chunk
+
 public:
 	/**
 	 * The constructor to be used with this class, start and end positions need to be specified.
@@ -47,7 +48,7 @@ public:
 	 */
 	size_t getEnd();
 	/**
-	 * Getter for the actual size of thsi chunk
+	 * Getter for the actual size of this chunk
 	 * @return the size of the chunk
 	 */
 	size_t getSize();
@@ -55,12 +56,12 @@ public:
 	 * Sets the hash of the chunk
 	 * @param hash a pointer to an array of BYTE
 	 */
-	void setHash(BYTE* hash);
+	void setHash(boost::shared_ptr<BYTE> hash);
 	/**
-	 * Retreives the hash of the chunk
+	 * Retrieves the hash of the chunk
 	 * @return a pointer to an array of BYTE
 	 */
-	BYTE* getHash();
+	boost::shared_ptr<BYTE> getHash();
 	friend std::ostream& operator <<(std::ostream& output, const Chunk& ch);
 
 };

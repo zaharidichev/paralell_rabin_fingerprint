@@ -206,7 +206,7 @@ int f() {
 		printf("%02x", digest[var]);
 
 	}
-
+return 0;
 }
 
 #endif /* CHUNKINGKERNEL_CU_ */

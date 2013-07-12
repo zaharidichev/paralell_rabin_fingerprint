@@ -11,11 +11,10 @@ Chunk::Chunk(size_t start, size_t end) {
 	this->start = start;
 	this->end = end;
 	this->size = this->end - this->start;
-	this->hash = (BYTE*) malloc(20);
+	this->hash = boost::shared_ptr<BYTE> ((BYTE*)malloc(20)) ;
 }
 
 Chunk::~Chunk() {
-	free(this->hash);
 
 }
 #include <iostream>
@@ -37,7 +36,7 @@ ostream& operator <<(ostream& output, const Chunk& ch) {
 	cout.setf(ios::hex, ios::basefield);
 
 	for (int var = 0; var < 20; ++var) {
-		cout << HEX(ch.hash[var]);
+		cout << HEX(ch.hash.get()[var]);
 
 	}
 
@@ -48,10 +47,10 @@ ostream& operator <<(ostream& output, const Chunk& ch) {
 	return output;
 }
 
-void Chunk::setHash(BYTE* hash) {
+void Chunk::setHash(boost::shared_ptr<BYTE> hash) {
 	this->hash = hash;
 }
 
-BYTE* Chunk::getHash() {
+boost::shared_ptr<BYTE> Chunk::getHash() {
 	return this->hash;
 }

@@ -12,17 +12,27 @@
  *      Author: Zahari Dichev <zaharidichev@gmail.com>
  */
 
+#ifndef BITFIELDARRAY_H_
+#define BITFIELDARRAY_H_
 #include "cuda_runtime.h"
 #include "../../etc/helpers/Macros.h"
 #include "stdio.h"
 #include "boost/shared_ptr.hpp"
-#ifndef BITFIELDARRAY_H_
-#define BITFIELDARRAY_H_
 
 using namespace boost;
 typedef u_int32_t* bitFieldArray;
 typedef u_int32_t word32;
 
+/**
+ * Calculates the length of a bitField array that is needed for a piece of data of a specified length
+ * @param dataLn the length of the data in bytes
+ * @return the size of the array (or how many 32 bit figures are needed to fit breakpoints for that data)
+ */
+
+inline __host__ size_t getSizeOfBitArray(size_t dataLn) {
+	return (dataLn % sizeof(word32) == 0) ? dataLn / sizeof(word32) : (dataLn / sizeof(word32)) + 1;
+
+}
 /**
  * This function flushes the bitfield data structure by setting all the bits within
  * it to 0;
