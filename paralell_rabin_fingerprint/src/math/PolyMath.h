@@ -24,13 +24,24 @@
 
 typedef Polynomial_128 POLY_128;
 
-
-
+/**
+ * This function returns the degree of the polynomial that is represented by the 64 bit integer
+ *
+ * @param p the 64 bit representaio nof the polynomial
+ * @return the degree
+ */
 inline __host__ __device__ int degree(POLY_64 p) {
 	return getLastSetBit(p); // get the last set bit (the one with the highest significance)
 }
 
-inline __host__ __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
+/**
+ * Performs X % Y for binary polynomials represented as bit registers.
+ *
+ * @param x the first polynomial
+ * @param y the second polynomial
+ * @return the remainder
+ */
+inline __host__   __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
 
 	int degreeOfX = degree(x); // get degree of x
 	int degreeOfY = degree(y); // get degree of y
@@ -48,14 +59,17 @@ inline __host__ __device__ POLY_64 mod(POLY_64 x, POLY_64 y) {
 	return x;
 }
 
-
-
-
-
-
-
-
-inline __host__ __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
+/**
+ * Multiplies two polynomial of degree up to 63. The result of that is a
+ * polynomial that can be of higher degree, therefore the structure representing
+ * it is a C struct of two 64 bit integers, the first one indicating the lower
+ * exponents and second one the higher ones.
+ *
+ * @param x the first polynomial
+ * @param y the second polynomial
+ * @return the product
+ */
+inline __host__   __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
 	//defining high and low bits of 128 poly
 	POLY_64 highBits = 0;
 	POLY_64 lowBits = 0;
@@ -90,8 +104,17 @@ inline __host__ __device__ POLY_128 mult_128(POLY_64 x, POLY_64 y) {
 	return result;
 }
 
-
-inline __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
+/**
+ * Performs modular reduction of a polynomial of degree up to 127 by a polynomial of
+ * degree up to 63. The higher polynomial is represented as a struct of two 64 bit integers.
+ * The result is a 64 bit representation of the resulting polynomial. We do not need more
+ * than that since X % Y will never be higher than Y.
+ *
+ * @param x the large polynomial
+ * @param d the smaller polynomial
+ * @return the result
+ */
+inline __host__   __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
 	INT_64 highBits = x.highBits;
 	INT_64 lowBits = x.lowBits;
 
@@ -116,17 +139,29 @@ inline __host__ __device__ POLY_64 mod_128(POLY_128 x, POLY_64 d) {
 	return lowBits;
 }
 
-inline __host__ __device__ POLY_64 polyModmult(POLY_64 x, POLY_64 y, POLY_64 d) {
+/**
+ * This function uses the above ones to perform modular multiplication. The two polynomials
+ * x and y are multiplied and the result is modded by the D parameter, which will always
+ * result in a polynomial of degree 63 or lower.
+ *
+ * @param x the first poly
+ * @param y the second poly
+ * @param d the divisor poly
+ * @return the result as a 64 bit integer representing a binary polynomial
+ */
+inline __host__   __device__ POLY_64 polyModmult(POLY_64 x, POLY_64 y, POLY_64 d) {
 
 	POLY_128 product = mult_128(x, y); // we first multiply the two polys
 	return mod_128(product, d); // and then return the result of modding the product by d
 }
 
-
-
-
-
-inline __host__  void printPolyAsEquationString(POLY_64 poly) {
+/**
+ *
+ * This function prints a 64 bit integer as a polynomial equation
+ *
+ * @param poly the binary polynomial represents in a 64 bit integer
+ */
+inline __host__ void printPolyAsEquationString(POLY_64 poly) {
 	/*
 	 * we do not need to go through all the bits one by one since we can just
 	 * get the highest set one (designating the degree of our polynomial and
@@ -156,19 +191,27 @@ inline __host__  void printPolyAsEquationString(POLY_64 poly) {
 				// else just print X^ the power
 				printf("x^%u", bitIndex);
 
-
 			}
 
 		}
 	}
 }
 
+/**
+ * The function prints a polynomial as a hex sequence
+ * @param p the binary polynomial as an integer
+ */
 inline __host__ void printPolyAsHEXString(POLY_64 p) {
 	printf("%016llX", p);
 
-
 }
 
+/**
+ * Prints the exact  binary pattern that is contained in the 64 bits of the integer
+ * that represents the polynomial
+ *
+ * @param a the 64 bit integer
+ */
 inline __host__ void printPolyAsBinaryString(POLY_64 a) {
 
 	int bits[64];
@@ -182,6 +225,5 @@ inline __host__ void printPolyAsBinaryString(POLY_64 a) {
 		printf("%d", bits[i]);
 	}
 }
-
 
 #endif /* POLYMATH_H_ */

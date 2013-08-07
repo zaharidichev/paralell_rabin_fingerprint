@@ -38,6 +38,10 @@ typedef struct {
 	unsigned char buf[BUFFER_SIZE];
 } byteBuffer;
 
+// ------------------------------------------------------------------------------------------//
+// -----------------------------------------PROTOTYPES---------------------------------------//
+// ------------------------------------------------------------------------------------------//
+
 /**
  * Method to initialize the empty buffer and set the pointer
  * to the start of the array. Takes a pointer to the struct containing
@@ -73,15 +77,13 @@ __host__ __device__ bool isFull(byteBuffer* buf);
  * @param buf a pointer to the buffer
  * @return the byte that is being removed from the buffer
  */
-__host__  __device__ BYTE push(BYTE b, byteBuffer* buf);
+__host__   __device__ BYTE push(BYTE b, byteBuffer* buf);
 
+// ------------------------------------------------------------------------------------------//
+// --------------------------------------IMPLEMENTATIONS-------------------------------------//
+// ------------------------------------------------------------------------------------------//
 
-
-
-
-inline __host__ __device__  void initBuffer(byteBuffer* buf) {
-
-
+inline __host__ __device__ void initBuffer(byteBuffer* buf) {
 
 	// cannot do that within a CUDA kernel...
 	//memset(buf->buf, 0, BUFFER_SIZE);
@@ -97,15 +99,11 @@ inline __host__ __device__  void initBuffer(byteBuffer* buf) {
 	buf->ifFull = 0;
 }
 
-
-
-inline __host__ __device__ void resetBuffer(byteBuffer* buf)
-{
+inline __host__ __device__ void resetBuffer(byteBuffer* buf) {
 	initBuffer(buf);
 }
 
-
-inline  __device__  bool isFull(byteBuffer* buf) {
+inline __device__ bool isFull(byteBuffer* buf) {
 	/*
 	 * simply trusting that push will set the full toggle to
 	 * true when the buffer is indeed full
@@ -113,7 +111,7 @@ inline  __device__  bool isFull(byteBuffer* buf) {
 	return buf->ifFull;
 }
 
-inline __device__  unsigned char push(BYTE b, byteBuffer* buf) {
+inline __device__ unsigned char push(BYTE b, byteBuffer* buf) {
 
 	if (++buf->bufptr >= BUFFER_SIZE) {
 		/*
@@ -129,8 +127,5 @@ inline __device__  unsigned char push(BYTE b, byteBuffer* buf) {
 	buf->buf[buf->bufptr] = b; // Overwrites the position in the array
 	return oldInPlace;
 }
-
-
-
 
 #endif /* BUFFER_H_ */

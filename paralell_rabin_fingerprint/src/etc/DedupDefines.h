@@ -1,8 +1,11 @@
-/*
- * DedupDefines.cuh
+/**
+ * DedupDefines.h
+ *
+ *  Global definitions
+ *
  *
  *  Created on: May 30, 2013
- *      Author: zahari
+ *      Author: zahari <zaharidichev@gmail.com>
  */
 
 #ifndef DEDUPDEFINES_H_

@@ -1,5 +1,6 @@
 /**
  * Macros.h
+ * Contains useful macros that are used in the chunking implementation
  *
  *  Created on: Jul 2, 2013
  *      Author: Zahari Dichev <zaharidichev@gmail.com>

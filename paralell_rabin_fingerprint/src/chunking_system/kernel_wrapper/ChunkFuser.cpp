@@ -46,7 +46,7 @@ void ChunkFuser::fuseChunks(boost::shared_ptr<u_int32_t> bitField, size_t sizeOf
 					shared_ptr<BYTE> scratchPad((BYTE*) malloc(this->residualSize + i));
 					//what the hell am I doing.....there is no way this does not go wrong at some point ....
 
-					std::cout << this->residualSize << " " << i << std::endl;
+					//std::cout << this->residualSize << " " << i << std::endl;
 					memcpy(scratchPad.get(), this->residualData.get(), this->residualSize);
 					memcpy(scratchPad.get() + residualSize, hostBuffer, i);
 
@@ -56,7 +56,7 @@ void ChunkFuser::fuseChunks(boost::shared_ptr<u_int32_t> bitField, size_t sizeOf
 					shared_ptr<Chunk> resolutionChunk(new Chunk(lastBP + posOffset, i + posOffset));
 					resolutionChunk.get()->setHash(digest);
 					this->fusedChunks.push_back(resolutionChunk);
-					std::cout << "Hashed outside: " << *(resolutionChunk.get()) << std::endl;
+					//std::cout << "Hashed outside: " << *(resolutionChunk.get()) << std::endl;
 
 					firstChunkMerged = true;
 					lastBP = i;

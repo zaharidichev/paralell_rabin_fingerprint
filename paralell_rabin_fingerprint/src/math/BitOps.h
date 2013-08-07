@@ -11,7 +11,6 @@
 #include "cuda.h"
 #include "../etc/DedupDefines.h"
 
-
 #ifndef BITOPS_H_
 #define BITOPS_H_
 
@@ -46,6 +45,15 @@ inline __host__ __device__ int getLastSetBit(uint64_t number) {
 	return -1;
 }
 
+/**
+ *
+ * Performs x % d in using bitwise operations in order to avoid heavy arithmetic division.
+ * This saves quite a lot of registers on the GPU
+ *
+ * @param x the value to be modded
+ * @param d the divisor
+ * @return the remainder
+ */
 inline __device__ uint64_t bitMod(uint64_t x, uint64_t d) {
 	return x & (d - 1);
 }

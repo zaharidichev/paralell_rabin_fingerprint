@@ -24,9 +24,10 @@
 #include <vector>
 #include "ChunkFuser.h"
 #include "../GPU_code/ResourceManagement.h"
+#include "../IO_tools/FileReader.h"
 #include <iostream>
 #include <fstream>
-#include <math.h>
+#include <cmath>
 
 /**
  * This is simply a type, which purpose is to set the type of chunking that will be performed
@@ -84,7 +85,7 @@ private:
 	 * @param dataLn the length of the file
 	 * @return
 	 */
-	std::vector<boost::shared_ptr<Chunk> > chunkFile_segmented(std::ifstream& file, size_t dataLn);
+	std::vector<boost::shared_ptr<Chunk> > chunkFile_segmented(FileReader& file, size_t dataLn);
 
 	/**
 	 * This private method performs what is called continuous chunking. It is a two - phase process in which
@@ -99,7 +100,7 @@ private:
 	 * @param dataLn
 	 * @return
 	 */
-	std::vector<boost::shared_ptr<Chunk> > chunkFile_continuous(std::ifstream& file, size_t dataLn);
+	std::vector<boost::shared_ptr<Chunk> > chunkFile_continuous(FileReader& file, size_t dataLn);
 
 public:
 	/** Constructor that initializes the chunker
@@ -127,7 +128,7 @@ public:
 	 * @param method the chunking method that needs to be used
 	 * @return a collection of pointers to Chunk objects
 	 */
-	std::vector<boost::shared_ptr<Chunk> > chunkFileFromDisk(std::ifstream& file, size_t dataLn, ChunkingMethod enumChunkingMethod);
+	std::vector<boost::shared_ptr<Chunk> > chunkFileFromDisk(FileReader& file, size_t dataLn, ChunkingMethod enumChunkingMethod);
 
 };
 

@@ -1,7 +1,7 @@
 /**
  * BitFieldArray.h
  *
- *This file provides the functions that are needed to manipualte a highly efficient
+ *This file provides the functions that are needed to manipulate a highly efficient
  *data structure, which purpose is to store bool values. The way the structure works
  *is that is stores consecutive 32bit figures in memory where each bit represents
  *a bool values that can be either true or not. The functions provided can manipulate

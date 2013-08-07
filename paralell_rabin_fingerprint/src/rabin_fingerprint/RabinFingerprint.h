@@ -38,7 +38,6 @@
  *      Author: zahari <zaharidichev@gmail.com>
  */
 
-
 #ifndef RABINFINGERPRINT_H
 #define RABINFINGERPRINT_H
 
@@ -46,7 +45,9 @@
 #include "../math/PolyMath.h"
 #include "RabinData.h"
 
-
+// ------------------------------------------------------------------------------------------//
+// -----------------------------------------PROTOTYPES---------------------------------------//
+// ------------------------------------------------------------------------------------------//
 
 /**
  * Initializes the fingerprint data by setting all the values in the struct supplied
@@ -54,7 +55,7 @@
  * @param window the struct that holds the data for the fingerprint
  * @param PT the irreducible polynomial that will be used for modding the fingerprint
  */
-__host__  void initWindow(rabinData* window, POLY_64 PT);
+__host__ void initWindow(rabinData* window, POLY_64 PT);
 
 /**
  * Precomputes the results of pushing and popping bytes so that we do not have to
@@ -78,8 +79,7 @@ __host__ void precomputeTables(rabinData* fingerprintData);
  * @return an updated fingerprint with the contribution of the byte that fell out
  * removed
  */
-__host__  __device__ POLY_64 popAByte(rabinData* data, BYTE byte,
-		POLY_64 oldFingerprint, byteBuffer* buffer);
+__host__   __device__ POLY_64 popAByte(rabinData* data, BYTE byte, POLY_64 oldFingerprint, byteBuffer* buffer);
 
 /**
  * This function adds the contribution of a new byte to the fingerprint. Note that
@@ -92,8 +92,7 @@ __host__  __device__ POLY_64 popAByte(rabinData* data, BYTE byte,
  * @param byte the byte that needs to be added to the fingerprint
  * @return the updated fingerprint
  */
-__host__       __device__ INT_64 pushAByte(INT_64 oldFingerprint, rabinData* data,
-		BYTE byte);
+__host__        __device__ INT_64 pushAByte(INT_64 oldFingerprint, rabinData* data, BYTE byte);
 
 /**
  * This method makes use of both popAByte and pushAByte in order to abstract away the
@@ -106,17 +105,18 @@ __host__       __device__ INT_64 pushAByte(INT_64 oldFingerprint, rabinData* dat
  * @param buffer the buffer that holds the current contents of the window
  * @return the updated fingerprint
  */
-__host__ __device__ POLY_64 update(rabinData* data, BYTE m, POLY_64 fingerprint,
-		byteBuffer* buffer);
+__host__  __device__ POLY_64 update(rabinData* data, BYTE m, POLY_64 fingerprint, byteBuffer* buffer);
 
+// ------------------------------------------------------------------------------------------//
+// --------------------------------------IMPLEMENTATIONS-------------------------------------//
+// ------------------------------------------------------------------------------------------//
 
-
-inline  __host__  void initWindow(rabinData* window, POLY_64 PT) {
+inline __host__ void initWindow(rabinData* window, POLY_64 PT) {
 	window->Irreducble_PT = PT; // set the internal variable to the irreducible poly
 	precomputeTables(window);
 }
 
- __host__ inline  void precomputeTables(rabinData* fingerprintData) {
+__host__ inline void precomputeTables(rabinData* fingerprintData) {
 
 	//fingerprintData->fingerprint = 0;
 	int fDegree = degree(fingerprintData->Irreducble_PT);
@@ -124,8 +124,7 @@ inline  __host__  void initWindow(rabinData* window, POLY_64 PT) {
 	long T1 = mod((INT_64(1) << fDegree), fingerprintData->Irreducble_PT);
 	for (INT_64 j = 0; j < 256; j++) {
 		// computing the T table
-		fingerprintData->pushTable[(int) j] = (polyModmult(j, T1,
-				fingerprintData->Irreducble_PT) | (j << fDegree));
+		fingerprintData->pushTable[(int) j] = (polyModmult(j, T1, fingerprintData->Irreducble_PT) | (j << fDegree));
 		//printPolyAsHEXString(fingerprintData->pushTable[(int) j]);
 		//printf("\n");
 	}
@@ -134,15 +133,13 @@ inline  __host__  void initWindow(rabinData* window, POLY_64 PT) {
 	for (INT_64 i = 1; i < WIN_SIZE; i++)
 		sizeshift = pushAByte(sizeshift, fingerprintData, (BYTE) 0);
 	for (INT_64 i = 0; i < 256; i++) {
-		fingerprintData->popTable[i] = polyModmult(i, sizeshift,
-				fingerprintData->Irreducble_PT);
+		fingerprintData->popTable[i] = polyModmult(i, sizeshift, fingerprintData->Irreducble_PT);
 		//printPolyINHEX(fingerprintData->U[(int) i]);
 		//printf(" ");
 	}
 }
 
-inline __host__   __device__ POLY_64 popAByte(rabinData* data, BYTE byte,
-		POLY_64 oldFingerprint, byteBuffer* buffer) {
+inline __host__    __device__ POLY_64 popAByte(rabinData* data, BYTE byte, POLY_64 oldFingerprint, byteBuffer* buffer) {
 	/*
 	 * it might seem deceiving that we need a new byte in our POP function
 	 * but the fact is that this is part of the mechanism for updating
@@ -162,8 +159,7 @@ inline __host__   __device__ POLY_64 popAByte(rabinData* data, BYTE byte,
 	return newFingerprint;
 }
 
-inline __host__     __device__ INT_64 pushAByte(INT_64 oldFingerprint,
-		rabinData* data, BYTE byte) {
+inline __host__      __device__ INT_64 pushAByte(INT_64 oldFingerprint, rabinData* data, BYTE byte) {
 
 	// updates the fingerprint by adding contribution of the byte pushed
 	int idexInPushTable = (oldFingerprint >> data->shift); // get the index in the push table
@@ -173,8 +169,7 @@ inline __host__     __device__ INT_64 pushAByte(INT_64 oldFingerprint,
 	return (newFingerprint) ^ data->pushTable[idexInPushTable];
 }
 
-inline __host__    __device__ POLY_64 update(rabinData* data, BYTE byte,
-		POLY_64 oldFingerprint, byteBuffer* buffer) {
+inline __host__     __device__ POLY_64 update(rabinData* data, BYTE byte, POLY_64 oldFingerprint, byteBuffer* buffer) {
 
 	/*
 	 * the function utilizes the pop and push routines in order to

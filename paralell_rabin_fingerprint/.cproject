@@ -51,12 +51,12 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="com.nvidia.cuda.ide.configuration.debug.1279271520.2079492795" name="trigger.cpp" rcbsApplicability="disable" resourcePath="src/chunking_system/kernel_wrapper/trigger.cpp" toolsToInvoke="nvcc.compiler.base.1801752779.2114044130">
-						<tool id="nvcc.compiler.base.1801752779.2114044130" name="NVCC Compiler" superClass="nvcc.compiler.base.1801752779"/>
+					<fileInfo id="com.nvidia.cuda.ide.configuration.debug.1279271520.700623805" name="Chunk.cpp" rcbsApplicability="disable" resourcePath="src/chunking_system/kernel_wrapper/Chunk.cpp" toolsToInvoke="nvcc.compiler.base.1801752779.1213718339">
+						<tool id="nvcc.compiler.base.1801752779.1213718339" name="NVCC Compiler" superClass="nvcc.compiler.base.1801752779"/>
 					</fileInfo>
 					<sourceEntries>
-						<entry excluding="GPU_code|hashing|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="kernelLauncher.cu" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="GPU_code|hashing|IO_tools|src|kernel_wrapper" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="chunking_system/kernel_wrapper/Chunk.cpp|etc/helpers/cuPrintf.cuh|etc/helpers/cuPrintf.cu|kernelLauncher.cu" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -112,10 +112,11 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="hashing|kernel_wrapper|GPU_code|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="chunking_system/kernel_wrapper|chunking_system/GPU_code" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="IO_tools|hashing|kernel_wrapper|GPU_code|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="chunking_system/IO_tools|chunking_system/kernel_wrapper|chunking_system/GPU_code" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry excluding="hashing" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/GPU_code"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/GPU_code/hashing"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/IO_tools"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/chunking_system/kernel_wrapper"/>
 					</sourceEntries>
 				</configuration>

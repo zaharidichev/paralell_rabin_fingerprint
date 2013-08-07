@@ -2,9 +2,9 @@
  * ResourceManagement.h
  *
  *
- *This is a collection of functions that wrap CUDA driver API calls for managing resources.
- *on the device. Functionality includes allocating entities of data that are specific to the
- *application domain of chunking on the GPU.
+ * This is a collection of functions that wrap CUDA driver API calls for managing resources.
+ * on the device. Functionality includes allocating entities of data that are specific to the
+ * application domain of chunking on the GPU.
  *
  *  Created on: Jul 2, 2013
  *      Author: Zahari Dichev <zaharidichev@gmail.com>
@@ -19,6 +19,18 @@
 
 #define MIN_WORK_PER_THREAD 262144
 
+/**
+ *
+ * This function initializes the chunking context on the device and returns a pointer
+ * to device memory which can be passed to a kernel invocation
+ *
+ * @param minThr the minimum threshold
+ * @param maxThr the maximum threshold
+ * @param breakpointsPerThread the number of breakpoints per thread (words case)
+ * @param sizeOfBreakpointsArray the size of the breapoints array
+ *
+ * @return device memory pointer to the chunking context
+ */
 inline chunkingContext* initChunkingContextOnDevice(size_t minThr, size_t maxThr, size_t breakpointsPerThread, size_t sizeOfBreakpointsArray) {
 
 	chunkingContext ctx;
@@ -38,16 +50,43 @@ inline chunkingContext* initChunkingContextOnDevice(size_t minThr, size_t maxThr
 	return ctx_d;
 }
 
+/**
+ *
+ * Given a pointer to memory containing SHA-1 hashed and a pointer to
+ * host memory to which these hashes need to be copied, this function
+ * makes the necessary CUDA calls to transfer the data and handle potential
+ * errors
+ *
+ * @param hashes_d pointer to device memory where hashes reside
+ * @param hashes_h pointer to host memory where hashes need to be copied to
+ * @param numHashes the number of hashes to be copied
+ * @param sizeOfHashes the size of a single hash in bytes
+ */
 inline void downloadHashesFromDeviceToHost(BYTE* hashes_d, BYTE* hashes_h, size_t numHashes, size_t sizeOfHashes) {
 	CUDA_CHECK_RETURN(cudaMemcpy(hashes_h, hashes_d, sizeof(BYTE) * numHashes * sizeOfHashes, cudaMemcpyDeviceToHost));
 
 }
 
+/**
+ *
+ * This function just abstracts away the flushing of the hash buffer on the device side.
+ *
+ * @param hashes_d pointer to device memory
+ * @param numHashes number of hashes
+ * @param sizeOfHashes the size of a single SHA-1 hash
+ */
 inline void flushHashesBuffer(BYTE* hashes_d, size_t numHashes, size_t sizeOfHashes) {
 	CUDA_CHECK_RETURN(cudaMemset(hashes_d, 0, sizeof(BYTE) * numHashes * sizeOfHashes));
 
 }
 
+/**
+ * Function to abstract away the allocation process of a device side buffer for SHA-1 hashes
+ *
+ * @param numHashes the number of hashes needed
+ * @param sizeOfHashes the size of a single hash
+ * @return the pointer to the allocated memory
+ */
 inline BYTE* allocateHashesBufferOnDevice(size_t numHashes, size_t sizeOfHashes) {
 	BYTE* hashes_d;
 	CUDA_CHECK_RETURN(cudaMalloc((void** ) &hashes_d, sizeof(BYTE) * numHashes * sizeOfHashes));
@@ -55,11 +94,25 @@ inline BYTE* allocateHashesBufferOnDevice(size_t numHashes, size_t sizeOfHashes)
 	return hashes_d;
 }
 
+/**
+ * Flushes the breakpoint buffer on the device. This is needed when new kernel
+ * launch is dispatched
+ *
+ * @param breakpoints_d pointer to device memory
+ * @param size size of the breakpoints buffer (number of integers )
+ */
 inline void flushBreakpointsBufferOnDevice(int* breakpoints_d, size_t size) {
 	CUDA_CHECK_RETURN(cudaMemset(breakpoints_d, 0, sizeof(int) * size));
 
 }
 
+/**
+ *
+ * Allocates a breakpoints buffer on the device.
+ * @param size size of the buffer (number of potential breakpoints )
+ *
+ * @return pointer to device memory
+ */
 inline int* allocateBreakpointsBufferOnDevice(size_t size) {
 	int* resultingBreakpoints_d;
 	CUDA_CHECK_RETURN(cudaMalloc((void** ) &resultingBreakpoints_d, sizeof(int) * size));
@@ -67,19 +120,30 @@ inline int* allocateBreakpointsBufferOnDevice(size_t size) {
 	return resultingBreakpoints_d;
 }
 
-inline void downloadBreakpointsBufferFromDevice(int* breakpointsBuffer_d, int* breakpointsBuffer_h,size_t size) {
+/**
+ * Given a device   and host pointers, the breakpoint buffer is downlaoded
+ * from the device to the host memory
+ *
+ * @param breakpointsBuffer_d pointer to device memory
+ * @param breakpointsBuffer_h pointer to host memory
+ *
+ * @param size size of the buffer
+ */
+inline void downloadBreakpointsBufferFromDevice(int* breakpointsBuffer_d, int* breakpointsBuffer_h, size_t size) {
 	CUDA_CHECK_RETURN(cudaMemcpy(breakpointsBuffer_h, breakpointsBuffer_d, sizeof(int) * size, cudaMemcpyDeviceToHost));
 
 }
 
 /**
- * Calculates the number of breakpoints needed for a specific size of an array of data that will be fingerprinted
+ * Calculates the number of breakpoints needed for a specific size of
+ * an array of data that will be fingerprinted
+ *
  * @param dataLn the length of the data to be fingerprinted
  * @param minThreshold the minimum threshold of a chunks size
  * @return the maximum number of breakpoints that can be found in the data.
  */
 inline int getSizeOFBreakpointsArray(int dataLn, int minThreshold) {
-	return (dataLn % minThreshold == 0) ? (dataLn / minThreshold) + 1: (dataLn / minThreshold) + 2;
+	return (dataLn % minThreshold == 0) ? (dataLn / minThreshold) + 1 : (dataLn / minThreshold) + 2;
 
 }
 
@@ -160,8 +224,6 @@ inline int getNumBlocks(int threadsNeeded) {
 	}
 	return numBlocks;
 }
-
-
 
 /**
  *This function determines the number of threads needed for a particular data - parallel job to be

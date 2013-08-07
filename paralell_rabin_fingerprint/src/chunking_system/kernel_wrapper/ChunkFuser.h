@@ -15,10 +15,10 @@
 
 #ifndef CHUNKFUSER_H_
 #define CHUNKFUSER_H_
+#include "Chunk.h"
 
 #include "boost/smart_ptr.hpp"
 #include <vector>
-#include "Chunk.h"
 #include "../GPU_code/BitFieldArray.h"
 #include "../../etc/DedupDefines.h"
 #include "string.h"
@@ -46,8 +46,11 @@ private:
 	 *  every chunk.
 	 *
 	 * @param bitField the efficient bitfield array that holds the raw breakpoints
+	 *
 	 * @param sizeOfField the size of the bitfield array
+	 *
 	 * @param posOffset the position offset of this piece of data into the file
+	 *
 	 * @param hostBuffer the host buffer where the data is stored
 	 */
 	void fuseChunks(shared_ptr<u_int32_t> bitField, size_t sizeOfField, size_t posOffset, BYTE* hostBuffer);
@@ -57,7 +60,9 @@ private:
 	 * fashion using a SHA1 algorithm.
 	 *
 	 * @param chunksToHash the container of chunks
+	 *
 	 * @param offset the offset into the file
+	 *
 	 * @param hostBuffer the buffer with host data
 	 */
 	void hashFusedChunks(std::vector<boost::shared_ptr<Chunk> > chunksToHash, size_t offset, BYTE* hostBuffer);
@@ -69,6 +74,7 @@ public:
 	 * for a chunk
 	 *
 	 * @param min the minimum size of a chunk
+	 *
 	 * @param max the maximum size of a chunk
 	 */
 	ChunkFuser(size_t min, size_t max);
@@ -90,14 +96,20 @@ public:
 	 * its hashing.
 	 *
 	 * @param bitField the raw breakpoints as a bit field array coming straight from the GPU
+	 *
 	 * @param sizeOfField the size of the bitfield array
-	 * @param posOffset the position offset of the beginning of this batch relative to the whole file being chunked
-	 * @param hostBuffer the host buffer that holds the data that was just chunked (used to extract the data for the production of hashes)
+	 *
+	 * @param posOffset the position offset of the beginning of this batch relative to the whole
+	 * file being chunked
+	 *
+	 * @param hostBuffer the host buffer that holds the data that was just chunked (used to extract
+	 * the data for the production of hashes)
 	 */
 	void addRawBreakPoints(boost::shared_ptr<u_int32_t> bitField, size_t sizeOfField, size_t posOffset, BYTE* hostBuffer);
 
 	/**
-	 * Retrives the fused chunks.
+	 * Retrieves the fused chunks.
+	 *
 	 * @return a collection of shared pointers to fused chunks
 	 */
 	std::vector<boost::shared_ptr<Chunk> > getChunks();
