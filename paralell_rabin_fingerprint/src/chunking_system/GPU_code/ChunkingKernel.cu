@@ -1,7 +1,7 @@
 /**
  * ChunkingKernel.cu
  *
- * This file contains the implementation of the functions that are used to start eh chunking kernels.
+ * This file contains the implementation of the functions that are used to start the chunking kernels.
  * Furthermore, it contains the implementation of the chunking kernels themselves. The calls from this
  * file perform the actual computations on the GPU hardware with the help of auxiliary functions such as
  * rabin fingerprint methods SHA-1 hash functions , etc.

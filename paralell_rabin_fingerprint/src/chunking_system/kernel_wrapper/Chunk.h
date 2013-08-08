@@ -2,7 +2,7 @@
  * Chunk.h
  *
  *	Represents a logical chunk of data that spans from a starting position to an ending
- *	position (not included) Additionally each chunk is associated with a hash valeus that
+ *	position (not included) Additionally each chunk is associated with a hash values that
  *	identifies it
  *
  *  Created on: Jul 4, 2013

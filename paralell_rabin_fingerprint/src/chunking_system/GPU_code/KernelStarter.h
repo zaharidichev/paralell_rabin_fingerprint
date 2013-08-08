@@ -2,9 +2,10 @@
  * KernelStarter.h
  *
  * This file provides two functions that are abstractions
- * over the raw cuda kernel launches. Those functions are used to start
+ * over the raw CUDA kernel launches. Those functions are used to start
  * the two type of chunking on the GPU device - the continuous type and
  * the segmented type chunking.
+ *
  *  Created on: Jul 2, 2013
  *      Author: Zahari Dichev <zaharidichev@gmail.com>
  */

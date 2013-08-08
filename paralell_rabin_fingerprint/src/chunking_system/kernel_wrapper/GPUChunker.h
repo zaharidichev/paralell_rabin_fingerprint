@@ -77,9 +77,9 @@ private:
 	 * This private method is used for chunking and fingeprinting in a segmented fashion. What that means
 	 * is that the size of chunks will be affected by how much data is dedicated per thread on the GPU.
 	 * This avoids the chunk fusion process and accelerates the performance of the algorithm greatly. The
-	 * tradeoff is that by changing the amount of work per thread , the size way chunks are formed will be
-	 * changed thus producing different chunks every time. Experiments show that on highly versioned data
-	 * and relatively small chunk sizes (4k - 16k) efficiency of deduplication is deteriorated only by roughly 5%
+	 * tradeoff is that by changing the amount of work per thread , the size of chunks are formed will be
+	 * changed too thus producing different chunks. Experiments show that on highly versioned data and
+	 * relatively small chunk sizes (4k - 16k) efficiency of deduplication is deteriorated only by roughly 5%
 	 *
 	 * @param file the filestream
 	 * @param dataLn the length of the file
